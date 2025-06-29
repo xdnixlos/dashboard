@@ -5,89 +5,75 @@ const Parser = require('rss-parser');
 const axios = require('axios');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+const db = require('./database.js');
 
 const app = express();
 const parser = new Parser();
 const PORT = 3000;
 
-// Umgebungsvariablen laden
-const { OPENWEATHER_API_KEY, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SESSION_SECRET } = process.env;
-const SPOTIFY_REDIRECT_URI = 'https://y.wf-tech.de/spotify/callback';
+const { OPENWEATHER_API_KEY, SESSION_SECRET } = process.env;
 
-// --- Middleware ---
+// Middleware
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({
     secret: SESSION_SECRET || 'default_secret',
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Für dev. In prod hinter NGINX mit `secure: true`
+    saveUninitialized: false,
+    cookie: { secure: false }
 }));
 
-// --- Hauptroute ---
+// Hauptroute
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-// --- Spotify Login-Route ---
-app.get('/login/spotify', (req, res) => {
-    const scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state';
-    const authUrl = 'https://accounts.spotify.com/authorize?' +
-        new URLSearchParams({
-            response_type: 'code',
-            client_id: SPOTIFY_CLIENT_ID,
-            scope: scope,
-            redirect_uri: SPOTIFY_REDIRECT_URI,
-        }).toString();
-    res.redirect(authUrl);
-});
-
-// --- Spotify Callback-Route ---
-app.get('/spotify/callback', async (req, res) => {
-    const code = req.query.code || null;
-    if (!code) {
-        return res.redirect('/#error=access_denied');
-    }
-
-    try {
-        const response = await axios({
-            method: 'post',
-            url: 'https://accounts.spotify.com/api/token',
-            data: new URLSearchParams({
-                grant_type: 'authorization_code',
-                code: code,
-                redirect_uri: SPOTIFY_REDIRECT_URI
-            }).toString(),
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + (Buffer.from(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET).toString('base64'))
+// --- BENUTZER-LOGIN MIT PIN ---
+app.post('/login', (req, res) => {
+    const { username, pin } = req.body; // Geändert von password zu pin
+    const sql = "SELECT * FROM users WHERE username = ?";
+    
+    db.get(sql, [username], (err, user) => {
+        if (err || !user) {
+            return res.status(400).json({ "error": "Benutzer nicht gefunden" });
+        }
+        bcrypt.compare(pin, user.password, (err, result) => { // Geändert von password zu pin
+            if (result) {
+                req.session.userId = user.id;
+                req.session.username = user.username;
+                res.json({ "message": "Erfolgreich eingeloggt" });
+            } else {
+                res.status(400).json({ "error": "Falsche PIN" }); // Geänderte Fehlermeldung
             }
         });
-        
-        req.session.accessToken = response.data.access_token;
-        req.session.refreshToken = response.data.refresh_token;
-        
-        res.redirect('/');
+    });
+});
 
-    } catch (error) {
-        console.error('Error getting Spotify token:', error.response ? error.response.data : error.message);
-        res.redirect('/#error=auth_failed');
+// Logout-Route
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/');
+    });
+});
+
+// Auth Status Route
+app.get('/api/auth/status', (req, res) => {
+    if (req.session.userId) {
+        res.json({ loggedIn: true, username: req.session.username });
+    } else {
+        res.json({ loggedIn: false });
     }
 });
 
-// --- Logout-Route ---
-app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/');
-});
-
-
-// --- Bestehende API Routen (Wetter & RSS) ---
+// Bestehende API Routen
 app.get('/api/rss', async (req, res) => {
-    const feedUrl = 'https://feeds.feedburner.com/ServeTheHome'; 
+    const feedUrl = 'https://www.tagesschau.de/newsticker.rdf';
     try {
         const feed = await parser.parseURL(feedUrl);
-        res.json(feed.items.slice(0, 5)); 
+        res.json(feed.items.slice(0, 5));
     } catch (error) {
         console.error('Fehler beim Abrufen des RSS-Feeds:', error);
         res.status(500).json({ error: 'Feed konnte nicht geladen werden.' });
@@ -103,11 +89,9 @@ app.get('/api/weather', async (req, res) => {
     const lang = 'de';
     const units = 'metric';
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&lang=${lang}&units=${units}`;
-
     try {
         const weatherResponse = await axios.get(url);
         const weatherData = weatherResponse.data;
-        
         const relevantData = {
             city: weatherData.name,
             temperature: Math.round(weatherData.main.temp),
@@ -121,8 +105,7 @@ app.get('/api/weather', async (req, res) => {
     }
 });
 
-
-// --- Server Start ---
+// Server Start
 app.listen(PORT, () => {
     console.log(`[WF-Dashboard] Server läuft auf Port ${PORT}`);
 });
