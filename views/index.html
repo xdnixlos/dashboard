@@ -87,7 +87,7 @@
     </div>
 
     <script>
-        // --- Hilfsfunktionen ---
+        // --- HILFSFUNKTIONEN ---
         function getCalendarWeek(date) {
             const currentThursday = new Date(date.valueOf());
             currentThursday.setDate(currentThursday.getDate() - ((date.getDay() + 6) % 7) + 3);
@@ -100,6 +100,7 @@
             const timeElement = document.getElementById('time');
             const dateElement = document.getElementById('date');
             const kwElement = document.getElementById('calendar-week');
+            if (!timeElement || !dateElement || !kwElement) return;
             const now = new Date();
             timeElement.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
             dateElement.textContent = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -125,31 +126,47 @@
             }
         }
 
-        // --- View & Auth Logic ---
-        const authButton = document.getElementById('auth-button');
-        const publicView = document.getElementById('public-view');
-        const privateView = document.getElementById('private-view');
-        const userGreeting = document.getElementById('user-greeting');
-        const loginModal = document.getElementById('login-modal');
-        const loginForm = document.getElementById('login-form');
-        const cancelLoginBtn = document.getElementById('cancel-login');
-        const loginErrorMsg = document.getElementById('login-error');
+        // --- DATENLADEFUNKTIONEN ---
+        function fetchWeatherData() {
+            const weatherWidget = document.getElementById("weather-widget");
+            if (!weatherWidget) return;
+            const cityEl = weatherWidget.querySelector("h2");
+            const tempEl = weatherWidget.querySelector("p:nth-of-type(1)");
+            const descEl = weatherWidget.querySelector("p:nth-of-type(2)");
+            const iconEl = weatherWidget.querySelector("i");
+            fetch("/api/weather")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+                    cityEl.textContent = data.city;
+                    tempEl.textContent = `${data.temperature}°C`;
+                    descEl.textContent = data.description;
+                    iconEl.className = getWeatherIconClass(data.icon);
+                })
+                .catch(err => {
+                    console.error("Wetter-Fehler:", err);
+                    cityEl.textContent = "Wetter-Fehler";
+                });
+        }
 
-        function toggleView(isLoggedIn, username = '') {
-            if (isLoggedIn) {
-                publicView.classList.add('hidden');
-                privateView.classList.remove('hidden');
-                userGreeting.querySelector('span').textContent = username;
-                userGreeting.classList.remove('hidden');
-                authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
-                authButton.onclick = () => { window.location.href = '/logout'; };
-            } else {
-                publicView.classList.remove('hidden');
-                privateView.classList.add('hidden');
-                userGreeting.classList.add('hidden');
-                authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
-                authButton.onclick = () => { loginModal.classList.remove('hidden'); };
-            }
+        function fetchRssData() {
+            const rssWidgetList = document.querySelector("#rss-widget ul");
+            if (!rssWidgetList) return;
+            fetch("/api/rss")
+                .then(res => res.json())
+                .then(items => {
+                    rssWidgetList.innerHTML = "";
+                    items.forEach(item => {
+                        const li = document.createElement("li");
+                        li.className = "truncate";
+                        li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
+                        rssWidgetList.appendChild(li);
+                    });
+                })
+                .catch(err => {
+                    console.error("RSS-Fehler:", err);
+                    rssWidgetList.innerHTML = "<li>Feed konnte nicht geladen werden.</li>";
+                });
         }
 
         function updateSpotifyWidget() {
@@ -192,64 +209,65 @@
                     console.error('Spotify Widget Fehler:', err);
                 });
         }
-        
-        // --- Initialisierung & Event Listeners ---
+
+        // --- HAUPTLOGIK & EVENT LISTENERS ---
         document.addEventListener("DOMContentLoaded", () => {
+            // Elemente definieren
+            const authButton = document.getElementById('auth-button');
+            const publicView = document.getElementById('public-view');
+            const privateView = document.getElementById('private-view');
+            const userGreeting = document.getElementById('user-greeting');
+            const loginModal = document.getElementById('login-modal');
+            const loginForm = document.getElementById('login-form');
+            const cancelLoginBtn = document.getElementById('cancel-login');
+            const loginErrorMsg = document.getElementById('login-error');
+            const routeStartBtn = document.getElementById("route-start-btn");
+            const addAppButton = document.getElementById("add-app-button");
+            
+            // Ansicht basierend auf Login-Status umschalten
+            function toggleView(isLoggedIn, username = '') {
+                if (isLoggedIn) {
+                    publicView.classList.add('hidden');
+                    privateView.classList.remove('hidden');
+                    userGreeting.querySelector('span').textContent = username;
+                    userGreeting.classList.remove('hidden');
+                    authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
+                    authButton.onclick = () => { window.location.href = '/logout'; };
+                } else {
+                    publicView.classList.remove('hidden');
+                    privateView.classList.add('hidden');
+                    userGreeting.classList.add('hidden');
+                    authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
+                    authButton.onclick = () => { loginModal.classList.remove('hidden'); };
+                }
+            }
+
+            // Initialisierung
             updateClock();
             setInterval(updateClock, 60000);
 
-            // Fetch Auth Status and then other data
+            // Login-Status prüfen und entsprechende Daten laden
             fetch("/api/auth/status").then(res => res.json()).then(data => {
                 toggleView(data.loggedIn, data.username);
                 if (data.loggedIn) {
-                    updateSpotifyWidget();
-                    // Load private data if logged in
+                    updateSpotifyWidget(); // Daten für private Ansicht laden
                 } else {
-                    // Load public data if not logged in
-                    const rssWidgetList = document.querySelector("#rss-widget ul");
-                    if (rssWidgetList) {
-                        fetch("/api/rss").then(res => res.json()).then(items => {
-                            rssWidgetList.innerHTML = "";
-                            items.forEach(item => {
-                                const li = document.createElement("li");
-                                li.className = "truncate";
-                                li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
-                                rssWidgetList.appendChild(li);
-                            });
-                        }).catch(err => {
-                            console.error("RSS-Fehler:", err);
-                            rssWidgetList.innerHTML = "<li>Feed konnte nicht geladen werden.</li>";
-                        });
-                    }
-
-                    const weatherWidget = document.getElementById("weather-widget");
-                    if (weatherWidget) {
-                        const cityEl = weatherWidget.querySelector("h2");
-                        const tempEl = weatherWidget.querySelector("p:nth-of-type(1)");
-                        const descEl = weatherWidget.querySelector("p:nth-of-type(2)");
-                        const iconEl = weatherWidget.querySelector("i");
-                        fetch("/api/weather").then(res => res.json()).then(data => {
-                            if (data.error) throw new Error(data.error);
-                            cityEl.textContent = data.city;
-                            tempEl.textContent = `${data.temperature}°C`;
-                            descEl.textContent = data.description;
-                            iconEl.className = getWeatherIconClass(data.icon);
-                        }).catch(err => {
-                            console.error("Wetter-Fehler:", err);
-                            cityEl.textContent = "Wetter-Fehler";
-                        });
-                    }
+                    fetchWeatherData(); // Daten für öffentliche Ansicht laden
+                    fetchRssData();
                 }
-            }).catch(() => toggleView(false));
+            }).catch(() => {
+                toggleView(false);
+                fetchWeatherData();
+                fetchRssData();
+            });
 
-            // Setup Login Form
+            // Event Listener für Login-Modal
             cancelLoginBtn.addEventListener("click", () => loginModal.classList.add("hidden"));
             loginForm.addEventListener("submit", e => {
                 e.preventDefault();
                 const username = document.getElementById("username").value;
                 const pin = document.getElementById("pin").value;
                 loginErrorMsg.classList.add("hidden");
-
                 fetch("/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -264,8 +282,7 @@
                 });
             });
 
-            // Route Planner Logic
-            const routeStartBtn = document.getElementById("route-start-btn");
+            // Event Listener für Routenplaner
             if (routeStartBtn) {
                 routeStartBtn.addEventListener("click", () => {
                     const start = document.getElementById("route-start").value;
@@ -284,18 +301,9 @@
                 });
             }
 
-            // Modal Logic for adding apps
-            const addAppModal = document.getElementById("add-app-modal");
-            const addAppButton = document.getElementById("add-app-button");
-            const cancelAppButton = document.getElementById("cancel-add-app");
-            const saveAppButton = document.getElementById("save-add-app");
-
-            if(addAppButton) {
-                addAppButton.addEventListener('click', () => addAppModal.classList.remove('hidden'));
-                cancelAppButton.addEventListener('click', () => addAppModal.classList.add('hidden'));
-                saveAppButton.addEventListener('click', () => {
-                    addAppModal.classList.add('hidden');
-                });
+            // (Platzhalter für 'App hinzufügen' Modal)
+            if (addAppButton) {
+                // Hier kommt später die Logik für das App-Hinzufügen-Modal hin
             }
         });
     </script>
