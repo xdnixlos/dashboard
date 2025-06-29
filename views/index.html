@@ -23,15 +23,7 @@
         #background-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(315deg, rgba(168, 85, 247, 0.1), transparent 40%), linear-gradient(45deg, rgba(59, 130, 246, 0.1), transparent 40%), var(--background-color); animation: moveGradient 20s linear infinite; }
         @keyframes moveGradient { 0% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } 100% { background-position: 0% 0%; } }
         .content-wrapper { position: relative; z-index: 1; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
-        
-        /* KORRIGIERTE REGEL */
-        .accent-gradient-text { 
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); 
-            -webkit-background-clip: text; 
-            background-clip: text; 
-            color: transparent; 
-        }
-
+        .accent-gradient-text { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .widget, .tile { background: var(--tile-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-color); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .widget:hover, .tile:hover { background: var(--tile-hover-bg); transform: translateY(-8px) scale(1.03); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border-color: var(--accent-purple); }
         .tile-icon { transition: all 0.3s ease; }
@@ -40,18 +32,7 @@
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .action-btn { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
         .action-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); }
-        
-        /* KORRIGIERTE REGEL */
-        .logo { 
-            font-weight: 700; 
-            font-size: 1.5rem; 
-            letter-spacing: 1px; 
-            background: linear-gradient(90deg, #e0e0e0, #a0a0a0); 
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
+        .logo { font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; background: linear-gradient(90deg, #e0e0e0, #a0a0a0); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .input-field { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.75rem; color: white; transition: border-color 0.3s; }
         .input-field:focus { outline: none; border-color: var(--accent-blue); }
         .todo-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; }
@@ -68,15 +49,23 @@
             <div class="logo">WF-TECH</div>
             <div class="text-center sm:text-right">
                 <h1 id="time" class="text-5xl font-bold accent-gradient-text">10:30</h1>
-                <p id="date" class="text-lg text-gray-400">Sonntag, 23. Juni 2024</p>
-                <p id="calendar-week" class="text-sm text-gray-500 font-semibold mt-1">KW 25</p>
+                <p id="date" class="text-lg text-gray-400">Sonntag, 29. Juni 2025</p>
+                <p id="calendar-week" class="text-sm text-gray-500 font-semibold mt-1">KW 26</p>
             </div>
         </header>
 
         <!-- =========== PUBLIC VIEW =========== -->
         <main id="public-view" class="flex-grow w-full">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-                <div class="widget rounded-2xl p-6 flex justify-between items-center"><div><h2 class="text-xl font-semibold text-gray-400">München</h2><p class="text-4xl font-bold text-gray-200">15°C</p><p class="text-gray-400">Leichter Regen</p></div><i class="fas fa-cloud-sun-rain text-6xl text-blue-300"></i></div>
+                <!-- WETTER-WIDGET mit ID -->
+                <div id="weather-widget" class="widget rounded-2xl p-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-400">Lade Wetter...</h2>
+                        <p class="text-4xl font-bold text-gray-200">-°C</p>
+                        <p class="text-gray-400">-</p>
+                    </div>
+                    <i class="fas fa-spinner fa-spin text-6xl text-blue-300"></i>
+                </div>
                 <div class="widget rounded-2xl p-6"> <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-route mr-2"></i>Routenplaner</h3> <input class="w-full input-field mb-2" placeholder="Start..."> <input class="w-full input-field" placeholder="Ziel..."> <button class="w-full mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg">Route starten</button> </div>
                 <div id="rss-widget" class="widget rounded-2xl p-6 md:col-span-2 lg:col-span-1"> <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-rss mr-2"></i>Tech News</h3> <ul class="text-gray-300 space-y-2 text-sm"> <li>Lade Feed...</li> </ul> </div>
             </div>
@@ -181,37 +170,26 @@
             addAppModal.classList.add('hidden');
         });
         
-        // --- RSS-Feed abrufen und anzeigen ---
+        // --- API Calls on Page Load ---
         document.addEventListener('DOMContentLoaded', () => {
+            // RSS-Feed abrufen
             const rssWidgetList = document.querySelector('#rss-widget ul');
-            
             if (rssWidgetList) {
-                rssWidgetList.innerHTML = '<li>Lade Feed...</li>';
-                const url = window.location.origin + '/api/rss';
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Netzwerkantwort war nicht ok.');
-                        }
-                        return response.json();
-                    })
+                const rssUrl = window.location.origin + '/api/rss';
+                fetch(rssUrl)
+                    .then(response => response.json())
                     .then(items => {
+                        if (!items || items.length === 0) throw new Error('Keine Artikel gefunden.');
                         rssWidgetList.innerHTML = ''; 
-                        if (items.length === 0) {
-                            rssWidgetList.innerHTML = '<li>Keine Artikel gefunden.</li>';
-                            return;
-                        }
                         items.forEach(item => {
                             const listItem = document.createElement('li');
                             listItem.classList.add('truncate');
-                            
                             const link = document.createElement('a');
                             link.href = item.link;
                             link.textContent = item.title;
                             link.target = '_blank';
                             link.rel = 'noopener noreferrer';
                             link.classList.add('hover:text-white');
-
                             listItem.appendChild(link);
                             rssWidgetList.appendChild(listItem);
                         });
@@ -221,7 +199,55 @@
                         rssWidgetList.innerHTML = '<li>Feed konnte nicht geladen werden.</li>';
                     });
             }
+
+            // Wetter abrufen
+            const weatherWidget = document.getElementById('weather-widget');
+            if (weatherWidget) {
+                const cityElement = weatherWidget.querySelector('h2');
+                const tempElement = weatherWidget.querySelector('p:nth-of-type(1)');
+                const descElement = weatherWidget.querySelector('p:nth-of-type(2)');
+                const iconElement = weatherWidget.querySelector('i');
+
+                const weatherUrl = window.location.origin + '/api/weather';
+                fetch(weatherUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) throw new Error(data.error);
+                        cityElement.textContent = data.city;
+                        tempElement.textContent = `${data.temperature}°C`;
+                        descElement.textContent = data.description;
+                        iconElement.className = getWeatherIconClass(data.icon);
+                    })
+                    .catch(error => {
+                        console.error('Fehler beim Laden des Wetters:', error);
+                        cityElement.textContent = 'Wetter-Fehler';
+                        tempElement.textContent = ':(';
+                        descElement.textContent = 'Daten nicht verfügbar';
+                        iconElement.className = 'fas fa-times-circle text-6xl text-red-400';
+                    });
+            }
         });
+
+        // HILFSFUNKTION: Wandelt OpenWeather-Icons in FontAwesome-Icons um
+        function getWeatherIconClass(iconCode) {
+            const baseClass = 'text-6xl';
+            const colorClass = 'text-blue-300';
+
+            switch (iconCode) {
+                case '01d': return `fas fa-sun ${baseClass} text-yellow-300`;
+                case '01n': return `fas fa-moon ${baseClass} text-indigo-300`;
+                case '02d': return `fas fa-cloud-sun ${baseClass} text-yellow-400`;
+                case '02n': return `fas fa-cloud-moon ${baseClass} text-indigo-300`;
+                case '03d': case '03n': case '04d': case '04n': return `fas fa-cloud ${baseClass} text-gray-400`;
+                case '09d': case '09n': return `fas fa-cloud-showers-heavy ${baseClass} ${colorClass}`;
+                case '10d': return `fas fa-cloud-sun-rain ${baseClass} ${colorClass}`;
+                case '10n': return `fas fa-cloud-moon-rain ${baseClass} ${colorClass}`;
+                case '11d': case '11n': return `fas fa-bolt ${baseClass} text-yellow-500`;
+                case '13d': case '13n': return `fas fa-snowflake ${baseClass} text-white`;
+                case '50d': case '50n': return `fas fa-smog ${baseClass} text-gray-500`;
+                default: return `fas fa-question-circle ${baseClass} text-gray-400`;
+            }
+        }
     </script>
 </body>
 </html>
