@@ -87,10 +87,216 @@
     </div>
 
     <script>
-        function getCalendarWeek(e){const t=new Date(e.valueOf());t.setDate(t.getDate()-(e.getDay()+6)%7+3);const o=new Date(t.getFullYear(),0,4);return o.setDate(o.getDate()-(o.getDay()+6)%7+3),Math.round((new Date(t.valueOf())-o.valueOf())/864e5/7+1)}function updateClock(){const e=document.getElementById("time"),t=document.getElementById("date"),o=document.getElementById("calendar-week"),a=new Date;e.textContent=a.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}),t.textContent=a.toLocaleDateString("de-DE",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),o.textContent=`KW ${getCalendarWeek(a)}`}function getWeatherIconClass(e){const t="text-6xl",o="text-blue-300";switch(e){case"01d":return`fas fa-sun ${t} text-yellow-300`;case"01n":return`fas fa-moon ${t} text-indigo-300`;case"02d":return`fas fa-cloud-sun ${t} text-yellow-400`;case"02n":return`fas fa-cloud-moon ${t} text-indigo-300`;case"03d":case"03n":case"04d":case"04n":return`fas fa-cloud ${t} text-gray-400`;case"09d":case"09n":return`fas fa-cloud-showers-heavy ${t} ${o}`;case"10d":return`fas fa-cloud-sun-rain ${t} ${o}`;case"10n":return`fas fa-cloud-moon-rain ${t} ${o}`;case"11d":case"11n":return`fas fa-bolt ${t} text-yellow-500`;case"13d":case"13n":return`fas fa-snowflake ${t} text-white`;case"50d":case"50n":return`fas fa-smog ${t} text-gray-500`;default:return`fas fa-question-circle ${t} text-gray-400`}}
-        const authButton=document.getElementById("auth-button"),publicView=document.getElementById("public-view"),privateView=document.getElementById("private-view"),userGreeting=document.getElementById("user-greeting"),loginModal=document.getElementById("login-modal"),loginForm=document.getElementById("login-form"),cancelLoginBtn=document.getElementById("cancel-login"),loginErrorMsg=document.getElementById("login-error");function toggleView(e,t=""){e?(publicView.classList.add("hidden"),privateView.classList.remove("hidden"),userGreeting.querySelector("span").textContent=t,userGreeting.classList.remove("hidden"),authButton.innerHTML='<i class="fas fa-unlock mr-2"></i> Abmelden',authButton.onclick=()=>{window.location.href="/logout"}):(publicView.classList.remove("hidden"),privateView.classList.add("hidden"),userGreeting.classList.add("hidden"),authButton.innerHTML='<i class="fas fa-lock mr-2"></i> Anmelden',authButton.onclick=()=>{loginModal.classList.remove("hidden")})}
-        function updateSpotifyWidget(){const e=document.getElementById("spotify-widget");e&&fetch("/api/spotify/player").then(e=>e.json()).then(t=>{t.error?e.innerHTML='<p class="text-red-400">Spotify Fehler</p>':t.connected?t.item?e.innerHTML=`\n                            <div class="flex gap-6 items-center w-full">\n                                <img src="${t.item.album.images[0].url}" alt="Album Art" class="w-24 h-24 rounded-lg shadow-lg">\n                                <div class="text-left flex-grow">\n                                    <h3 class="font-bold text-lg truncate">${t.item.name}</h3>\n                                    <p class="text-gray-400 truncate">${t.item.artists.map(e=>e.name).join(", ")}</p>\n                                    <div class="flex items-center gap-4 mt-2">\n                                        <p class="text-2xl text-gray-400"><i class="fas fa-backward-step"></i></p>\n                                        <p class="text-4xl">${t.is_playing?'<i class="fas fa-pause-circle"></i>':'<i class="fas fa-play-circle"></i>'}</p>\n                                        <p class="text-2xl text-gray-400"><i class="fas fa-forward-step"></i></p>\n                                    </div>\n                                </div>\n                            </div>\n                        `:e.innerHTML='<p>Auf keinem Gerät wird Musik abgespielt.</p>':e.innerHTML=`\n                            <i class="fab fa-spotify text-5xl text-green-500 mb-3"></i>\n                            <h3 class="text-xl font-bold">Spotify verbinden</h3>\n                            <button onclick="window.location.href='/connect/spotify'" class="mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg text-sm">Verbinden</button>\n                        `}).catch(t=>{e.innerHTML='<p class="text-red-400">Spotify Status konnte nicht geladen werden.</p>',console.error("Spotify Widget Fehler:",t)})}
-        document.addEventListener("DOMContentLoaded",()=>{updateClock(),setInterval(updateClock,6e4),fetch("/api/auth/status").then(e=>e.json()).then(e=>{toggleView(e.loggedIn,e.username),e.loggedIn&&updateSpotifyWidget()}).catch(()=>toggleView(!1)),cancelLoginBtn.addEventListener("click",()=>loginModal.classList.add("hidden")),loginForm.addEventListener("submit",e=>{e.preventDefault();const t=document.getElementById("username").value,o=document.getElementById("pin").value;loginErrorMsg.classList.add("hidden"),fetch("/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:t,pin:o})}).then(e=>e.json().then(t=>({status:e.status,body:t}))).then(({status:e,body:t})=>{if(200!==e)throw new Error(t.error||"Login fehlgeschlagen");loginModal.classList.add("hidden"),window.location.reload()}).catch(e=>{loginErrorMsg.textContent=e.message,loginErrorMsg.classList.remove("hidden")})});const e=document.querySelector("#rss-widget ul");e&&fetch("/api/rss").then(e=>e.json()).then(t=>{e.innerHTML="",t.forEach(t=>{const o=document.createElement("li");o.className="truncate",o.innerHTML=`<a href="${t.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${t.title}</a>`,e.appendChild(o)})}).catch(t=>{console.error("RSS-Fehler:",t),e.innerHTML="<li>Feed konnte nicht geladen werden.</li>"});const t=document.getElementById("weather-widget");if(t){const e=t.querySelector("h2"),o=t.querySelector("p:nth-of-type(1)"),a=t.querySelector("p:nth-of-type(2)"),n=t.querySelector("i");fetch("/api/weather").then(e=>e.json()).then(t=>{if(t.error)throw new Error(t.error);e.textContent=t.city,o.textContent=`${t.temperature}°C`,a.textContent=t.description,n.className=getWeatherIconClass(t.icon)}).catch(o=>{console.error("Wetter-Fehler:",o),e.textContent="Wetter-Fehler"})}const o=document.getElementById("route-start-btn");o&&o.addEventListener("click",()=>{const e=document.getElementById("route-start").value,t=document.getElementById("route-destination").value;if(!e||!t)return o.textContent="Bitte alles ausfüllen!",o.classList.add("bg-red-500"),void setTimeout(()=>{o.textContent="Route starten",o.classList.remove("bg-red-500")},2e3);const a=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(e)}&destination=${encodeURIComponent(t)}`;window.open(a,"_blank")})});
+        // --- Hilfsfunktionen ---
+        function getCalendarWeek(date) {
+            const currentThursday = new Date(date.valueOf());
+            currentThursday.setDate(currentThursday.getDate() - ((date.getDay() + 6) % 7) + 3);
+            const firstThursday = new Date(currentThursday.getFullYear(), 0, 4);
+            firstThursday.setDate(firstThursday.getDate() - ((firstThursday.getDay() + 6) % 7) + 3);
+            return Math.round((new Date(currentThursday.valueOf()) - firstThursday.valueOf()) / 86400000 / 7 + 1);
+        }
+
+        function updateClock() {
+            const timeElement = document.getElementById('time');
+            const dateElement = document.getElementById('date');
+            const kwElement = document.getElementById('calendar-week');
+            const now = new Date();
+            timeElement.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            dateElement.textContent = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            kwElement.textContent = `KW ${getCalendarWeek(now)}`;
+        }
+
+        function getWeatherIconClass(iconCode) {
+            const baseClass = 'text-6xl';
+            const colorClass = 'text-blue-300';
+            switch (iconCode) {
+                case '01d': return `fas fa-sun ${baseClass} text-yellow-300`;
+                case '01n': return `fas fa-moon ${baseClass} text-indigo-300`;
+                case '02d': return `fas fa-cloud-sun ${baseClass} text-yellow-400`;
+                case '02n': return `fas fa-cloud-moon ${baseClass} text-indigo-300`;
+                case '03d': case '03n': case '04d': case '04n': return `fas fa-cloud ${baseClass} text-gray-400`;
+                case '09d': case '09n': return `fas fa-cloud-showers-heavy ${baseClass} ${colorClass}`;
+                case '10d': return `fas fa-cloud-sun-rain ${baseClass} ${colorClass}`;
+                case '10n': return `fas fa-cloud-moon-rain ${baseClass} ${colorClass}`;
+                case '11d': case '11n': return `fas fa-bolt ${baseClass} text-yellow-500`;
+                case '13d': case '13n': return `fas fa-snowflake ${baseClass} text-white`;
+                case '50d': case '50n': return `fas fa-smog ${baseClass} text-gray-500`;
+                default: return `fas fa-question-circle ${baseClass} text-gray-400`;
+            }
+        }
+
+        // --- View & Auth Logic ---
+        const authButton = document.getElementById('auth-button');
+        const publicView = document.getElementById('public-view');
+        const privateView = document.getElementById('private-view');
+        const userGreeting = document.getElementById('user-greeting');
+        const loginModal = document.getElementById('login-modal');
+        const loginForm = document.getElementById('login-form');
+        const cancelLoginBtn = document.getElementById('cancel-login');
+        const loginErrorMsg = document.getElementById('login-error');
+
+        function toggleView(isLoggedIn, username = '') {
+            if (isLoggedIn) {
+                publicView.classList.add('hidden');
+                privateView.classList.remove('hidden');
+                userGreeting.querySelector('span').textContent = username;
+                userGreeting.classList.remove('hidden');
+                authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
+                authButton.onclick = () => { window.location.href = '/logout'; };
+            } else {
+                publicView.classList.remove('hidden');
+                privateView.classList.add('hidden');
+                userGreeting.classList.add('hidden');
+                authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
+                authButton.onclick = () => { loginModal.classList.remove('hidden'); };
+            }
+        }
+
+        function updateSpotifyWidget() {
+            const widget = document.getElementById('spotify-widget');
+            if (!widget) return;
+            fetch('/api/spotify/player')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        widget.innerHTML = `<p class="text-red-400">Spotify Fehler</p>`;
+                        return;
+                    }
+                    if (!data.connected) {
+                        widget.innerHTML = `
+                            <i class="fab fa-spotify text-5xl text-green-500 mb-3"></i>
+                            <h3 class="text-xl font-bold">Spotify verbinden</h3>
+                            <button onclick="window.location.href='/connect/spotify'" class="mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg text-sm">Verbinden</button>
+                        `;
+                    } else if (data.item) {
+                        widget.innerHTML = `
+                            <div class="flex gap-6 items-center w-full">
+                                <img src="${data.item.album.images[0].url}" alt="Album Art" class="w-24 h-24 rounded-lg shadow-lg">
+                                <div class="text-left flex-grow">
+                                    <h3 class="font-bold text-lg truncate">${data.item.name}</h3>
+                                    <p class="text-gray-400 truncate">${data.item.artists.map(a => a.name).join(', ')}</p>
+                                    <div class="flex items-center gap-4 mt-2">
+                                        <button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-backward-step"></i></button>
+                                        <button class="text-4xl hover:text-white">${data.is_playing ? '<i class="fas fa-pause-circle"></i>' : '<i class="fas fa-play-circle"></i>'}</button>
+                                        <button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-forward-step"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                         widget.innerHTML = `<p>Auf keinem Gerät wird Musik abgespielt.</p>`;
+                    }
+                })
+                .catch(err => {
+                    widget.innerHTML = `<p class="text-red-400">Spotify Status konnte nicht geladen werden.</p>`;
+                    console.error('Spotify Widget Fehler:', err);
+                });
+        }
+        
+        // --- Initialisierung & Event Listeners ---
+        document.addEventListener("DOMContentLoaded", () => {
+            updateClock();
+            setInterval(updateClock, 60000);
+
+            // Fetch Auth Status and then other data
+            fetch("/api/auth/status").then(res => res.json()).then(data => {
+                toggleView(data.loggedIn, data.username);
+                if (data.loggedIn) {
+                    updateSpotifyWidget();
+                }
+            }).catch(() => toggleView(false));
+
+            // Setup Login Form
+            cancelLoginBtn.addEventListener("click", () => loginModal.classList.add("hidden"));
+            loginForm.addEventListener("submit", e => {
+                e.preventDefault();
+                const username = document.getElementById("username").value;
+                const pin = document.getElementById("pin").value;
+                loginErrorMsg.classList.add("hidden");
+
+                fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, pin })
+                }).then(res => res.json().then(data => ({ status: res.status, body: data }))).then(({ status, body }) => {
+                    if (status !== 200) { throw new Error(body.error || "Login fehlgeschlagen"); }
+                    loginModal.classList.add("hidden");
+                    window.location.reload();
+                }).catch(err => {
+                    loginErrorMsg.textContent = err.message;
+                    loginErrorMsg.classList.remove("hidden");
+                });
+            });
+
+            // Fetch Public Data
+            const rssWidgetList = document.querySelector("#rss-widget ul");
+            if (rssWidgetList) {
+                fetch("/api/rss").then(res => res.json()).then(items => {
+                    rssWidgetList.innerHTML = "";
+                    items.forEach(item => {
+                        const li = document.createElement("li");
+                        li.className = "truncate";
+                        li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
+                        rssWidgetList.appendChild(li);
+                    });
+                }).catch(err => {
+                    console.error("RSS-Fehler:", err);
+                    rssWidgetList.innerHTML = "<li>Feed konnte nicht geladen werden.</li>";
+                });
+            }
+
+            const weatherWidget = document.getElementById("weather-widget");
+            if (weatherWidget) {
+                const cityEl = weatherWidget.querySelector("h2");
+                const tempEl = weatherWidget.querySelector("p:nth-of-type(1)");
+                const descEl = weatherWidget.querySelector("p:nth-of-type(2)");
+                const iconEl = weatherWidget.querySelector("i");
+                fetch("/api/weather").then(res => res.json()).then(data => {
+                    if (data.error) throw new Error(data.error);
+                    cityEl.textContent = data.city;
+                    tempEl.textContent = `${data.temperature}°C`;
+                    descEl.textContent = data.description;
+                    iconEl.className = getWeatherIconClass(data.icon);
+                }).catch(err => {
+                    console.error("Wetter-Fehler:", err);
+                    cityEl.textContent = "Wetter-Fehler";
+                });
+            }
+
+            // Route Planner Logic
+            const routeStartBtn = document.getElementById("route-start-btn");
+            if (routeStartBtn) {
+                routeStartBtn.addEventListener("click", () => {
+                    const start = document.getElementById("route-start").value;
+                    const destination = document.getElementById("route-destination").value;
+                    if (!start || !destination) {
+                        routeStartBtn.textContent = "Bitte alles ausfüllen!";
+                        routeStartBtn.classList.add("bg-red-500");
+                        setTimeout(() => {
+                            routeStartBtn.textContent = "Route starten";
+                            routeStartBtn.classList.remove("bg-red-500");
+                        }, 2000);
+                        return;
+                    }
+                    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(destination)}`;
+                    window.open(mapsUrl, "_blank");
+                });
+            }
+
+            // Modal Logic for adding apps
+            const addAppModal = document.getElementById("add-app-modal");
+            const addAppButton = document.getElementById("add-app-button");
+            const cancelAppButton = document.getElementById("cancel-add-app");
+            const saveAppButton = document.getElementById("save-add-app");
+
+            if(addAppButton) {
+                addAppButton.addEventListener('click', () => addAppModal.classList.remove('hidden'));
+                cancelAppButton.addEventListener('click', () => addAppModal.classList.add('hidden'));
+                saveAppButton.addEventListener('click', () => {
+                    addAppModal.classList.add('hidden');
+                });
+            }
+        });
     </script>
 </body>
 </html>
