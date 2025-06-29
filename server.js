@@ -102,6 +102,41 @@ app.get('/api/spotify/player', isLoggedIn, async (req, res) => {
 });
 
 // --- WIDGET API ROUTES ---
+app.get('/api/weather', async (req, res) => {
+    if (!OPENWEATHER_API_KEY) return res.status(500).json({ error: 'Wetterschlüssel nicht konfiguriert.' });
+    const lat = 48.3035; 
+    const lon = 11.9082;
+    const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&lang=de&units=metric`;
+    try {
+        const response = await axios.get(url);
+        const forecastData = response.data;
+        const dailyForecasts = {};
+        forecastData.list.forEach(item => {
+            const date = item.dt_txt.split(' ')[0];
+            if (!dailyForecasts[date]) {
+                dailyForecasts[date] = item;
+            }
+        });
+        const relevantData = {
+            city: forecastData.city.name,
+            current: {
+                temperature: Math.round(forecastData.list[0].main.temp),
+                description: forecastData.list[0].weather[0].description,
+                icon: forecastData.list[0].weather[0].icon
+            },
+            forecast: Object.values(dailyForecasts).slice(1, 5).map(item => ({
+                day: new Date(item.dt * 1000).toLocaleDateString('de-DE', { weekday: 'short' }),
+                temp: Math.round(item.main.temp),
+                icon: item.weather[0].icon
+            }))
+        };
+        res.json(relevantData);
+    } catch (error) {
+        console.error('Fehler beim Abrufen der Wetterdaten:', error.response ? error.response.data : error.message);
+        res.status(500).json({ error: 'Wetterdaten konnten nicht geladen werden.' });
+    }
+});
+
 app.get('/api/rss', async (req, res) => {
     const feedUrl = 'https://www.tagesschau.de/newsticker.rdf';
     try {
@@ -112,49 +147,6 @@ app.get('/api/rss', async (req, res) => {
     }
 });
 
-app.get('/api/weather', async (req, res) => {
-    if (!OPENWEATHER_API_KEY) return res.status(500).json({ error: 'Wetterschlüssel nicht konfiguriert.' });
-
-    // NEU: Koordinaten für Erding und Forecast-URL
-    const lat = 48.3035; 
-    const lon = 11.9082;
-    const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&lang=de&units=metric`;
-
-    try {
-        const response = await axios.get(url);
-        const forecastData = response.data;
-
-        // Wir extrahieren die aktuelle Vorhersage und die Vorhersagen für die nächsten Tage (jeweils mittags)
-        const dailyForecasts = {};
-        forecastData.list.forEach(item => {
-            const date = item.dt_txt.split(' ')[0];
-            if (!dailyForecasts[date]) {
-                dailyForecasts[date] = item;
-            }
-        });
-
-        const relevantData = {
-            city: forecastData.city.name,
-            current: {
-                temperature: Math.round(forecastData.list[0].main.temp),
-                description: forecastData.list[0].weather[0].description,
-                icon: forecastData.list[0].weather[0].icon
-            },
-            forecast: Object.values(dailyForecasts).slice(1, 5).map(item => ({ // Nächste 4 Tage
-                day: new Date(item.dt * 1000).toLocaleDateString('de-DE', { weekday: 'short' }),
-                temp: Math.round(item.main.temp),
-                icon: item.weather[0].icon
-            }))
-        };
-
-        res.json(relevantData);
-    } catch (error) {
-        console.error('Fehler beim Abrufen der Wetterdaten:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Wetterdaten konnten nicht geladen werden.' });
-    }
-});
-
-// --- URL-SHORTENER-ROUTEN ---
 app.post('/api/shorten', async (req, res) => {
     const { url } = req.body;
     if (!url || !url.startsWith('http')) {
@@ -256,7 +248,7 @@ app.delete('/api/todos/:id', isLoggedIn, (req, res) => {
     });
 });
 
-// --- Redirect Route MUSS ALS LETZTE ROUTE STEHEN ---
+// --- Redirect Route ---
 app.get('/:shortCode', (req, res, next) => {
     const { shortCode } = req.params;
     if (shortCode.includes('.') || shortCode.startsWith('api')) { 

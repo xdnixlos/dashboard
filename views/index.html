@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WF-TECH Dashboard</title>
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <meta name="theme-color" content="#0A0A10">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -77,9 +82,17 @@
 
         <main id="public-view" class="flex-grow w-full">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-                <div id="weather-widget" class="widget rounded-2xl p-6 flex justify-between items-center">
-                    <div><h2 class="text-xl font-semibold text-gray-400">Lade Wetter...</h2><p class="text-4xl font-bold text-gray-200">-°C</p><p class="text-gray-400">-</p></div>
-                    <i class="fas fa-spinner fa-spin text-6xl text-blue-300"></i>
+                <div id="weather-widget" class="widget rounded-2xl p-6 flex flex-col justify-between">
+                    <div class="flex justify-between items-start w-full">
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-400">Lade Wetter...</h2>
+                            <p class="text-4xl font-bold text-gray-200">-°C</p>
+                            <p class="text-gray-400">-</p>
+                        </div>
+                        <i class="fas fa-spinner fa-spin text-6xl text-blue-300"></i>
+                    </div>
+                    <div id="weather-forecast" class="grid grid-cols-4 gap-4 mt-4 w-full text-center">
+                    </div>
                 </div>
                  <div id="radio-widget" class="widget rounded-2xl p-6">
                     <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-broadcast-tower mr-2"></i>WeAreOne - Radiostreams</h3>
@@ -229,7 +242,7 @@
         function getWeatherIconClass(t){const e="text-6xl",o="text-blue-300";switch(t){case"01d":return`fas fa-sun ${e} text-yellow-300`;case"01n":return`fas fa-moon ${e} text-indigo-300`;case"02d":return`fas fa-cloud-sun ${e} text-yellow-400`;case"02n":return`fas fa-cloud-moon ${e} text-indigo-300`;case"03d":case"03n":case"04d":case"04n":return`fas fa-cloud ${e} text-gray-400`;case"09d":case"09n":return`fas fa-cloud-showers-heavy ${e} ${o}`;case"10d":return`fas fa-cloud-sun-rain ${e} ${o}`;case"10n":return`fas fa-cloud-moon-rain ${e} ${o}`;case"11d":case"11n":return`fas fa-bolt ${e} text-yellow-500`;case"13d":case"13n":return`fas fa-snowflake ${e} text-white`;case"50d":case"50n":return`fas fa-smog ${e} text-gray-500`;default:return`fas fa-question-circle ${e} text-gray-400`}}
 
         // --- Datenladefunktionen ---
-        function fetchWeatherData(){const t=document.getElementById("weather-widget");if(!t)return;const e=t.querySelector("h2"),o=t.querySelector("p:nth-of-type(1)"),n=t.querySelector("p:nth-of-type(2)"),a=t.querySelector("i");fetch("/api/weather").then(t=>t.json()).then(t=>{if(t.error)throw new Error(t.error);e.textContent=t.city,o.textContent=`${t.temperature}°C`,n.textContent=t.description,a.className=getWeatherIconClass(t.icon)}).catch(t=>{console.error("Wetter-Fehler:",t),e.textContent="Wetter-Fehler"})}
+        function fetchWeatherData(){const t=document.getElementById("weather-widget");if(!t)return;const e=t.querySelector("h2"),o=t.querySelector("p:nth-of-type(1)"),n=t.querySelector("p:nth-of-type(2)"),a=t.querySelector("i"),d=document.getElementById("weather-forecast");fetch("/api/weather").then(t=>t.json()).then(t=>{if(t.error)throw new Error(t.error);e.textContent=t.city,o.textContent=`${t.current.temperature}°C`,n.textContent=t.current.description,a.className=getWeatherIconClass(t.current.icon),d.innerHTML="",t.forecast.forEach(t=>{const e=document.createElement("div");e.className="text-center",e.innerHTML=`\n                        <p class="font-semibold">${t.day}</p>\n                        <i class="${getWeatherIconClass(t.icon).replace("text-6xl","text-3xl")} my-1"></i>\n                        <p class="text-sm">${t.temp}°C</p>\n                    `,d.appendChild(e)})}).catch(t=>{console.error("Wetter-Fehler:",t),e.textContent="Wetter-Fehler"})}
         function fetchRssData(){const t=document.querySelector("#rss-widget ul");if(!t)return;fetch("/api/rss").then(t=>t.json()).then(e=>{if(t.innerHTML="",!e||0===e.length)return void(t.innerHTML="<li>Keine Artikel gefunden.</li>");e.forEach(e=>{const o=document.createElement("li");o.className="truncate",o.innerHTML=`<a href="${e.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${e.title}</a>`,t.appendChild(o)})}).catch(e=>{console.error("RSS-Fehler:",e),t.innerHTML="<li>Feed konnte nicht geladen werden.</li>"})}
         function updateSpotifyWidget(){const t=document.getElementById("spotify-widget");t&&fetch("/api/spotify/player").then(t=>t.json()).then(e=>{e.error?t.innerHTML='<p class="text-red-400">Spotify Fehler</p>':e.connected?e.item?t.innerHTML=`<div class="flex gap-6 items-center w-full"><img src="${e.item.album.images[0].url}" alt="Album Art" class="w-24 h-24 rounded-lg shadow-lg"><div class="text-left flex-grow"><h3 class="font-bold text-lg truncate">${e.item.name}</h3><p class="text-gray-400 truncate">${e.item.artists.map(t=>t.name).join(", ")}</p><div class="flex items-center gap-4 mt-2"><button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-backward-step"></i></button><button class="text-4xl hover:text-white">${e.is_playing?'<i class="fas fa-pause-circle"></i>':'<i class="fas fa-play-circle"></i>'}</button><button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-forward-step"></i></button></div></div></div>`:t.innerHTML="<p>Auf keinem Gerät wird Musik abgespielt.</p>":t.innerHTML='<i class="fab fa-spotify text-5xl text-green-500 mb-3"></i><h3 class="text-xl font-bold">Spotify verbinden</h3><button onclick="window.location.href=\'/connect/spotify\'" class="mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg text-sm">Verbinden</button>'}).catch(e=>{t.innerHTML='<p class="text-red-400">Spotify Status konnte nicht geladen werden.</p>',console.error("Spotify Widget Fehler:",e)})}
         function renderApps(t){const e=document.getElementById("private-apps-container");if(!e)return;document.querySelectorAll(".app-tile").forEach(t=>t.remove()),t.forEach(t=>{addAppTileToDOM(t)})}
