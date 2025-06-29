@@ -1,0 +1,21 @@
+{
+  "name": "WF-TECH Dashboard",
+  "short_name": "Dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A10",
+  "theme_color": "#0A0A10",
+  "description": "Ihr persönliches Dashboard.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
