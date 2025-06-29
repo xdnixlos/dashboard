@@ -10,7 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root{--background-color:#0A0A10;--tile-bg:rgba(20,20,35,0.4);--tile-hover-bg:rgba(30,30,50,0.6);--border-color:rgba(255,255,255,0.1);--accent-purple:#a855f7;--accent-blue:#3b82f6}body{font-family:'Inter',sans-serif;background-color:var(--background-color);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden}#background-animation{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:linear-gradient(315deg,rgba(168,85,247,0.1),transparent 40%),linear-gradient(45deg,rgba(59,130,246,0.1),transparent 40%),var(--background-color);animation:moveGradient 20s linear infinite}@keyframes moveGradient{0%{background-position:0 0}50%{background-position:100% 100%}100%{background-position:0 0}}.content-wrapper{position:relative;z-index:1;overflow-y:auto;height:100vh;scroll-behavior:smooth}.accent-gradient-text{background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple));-webkit-background-clip:text;background-clip:text;color:transparent}.widget,.tile{background:var(--tile-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border-color);transition:all .3s cubic-bezier(.25,.8,.25,1)}.widget:hover,.tile:hover{background:var(--tile-hover-bg);transform:translateY(-8px) scale(1.03);box-shadow:0 10px 25px rgba(0,0,0,.3);border-color:var(--accent-purple)}.tile-icon{transition:all .3s ease}.tile:hover .tile-icon{transform:scale(1.1);color:#c084fc}.fade-in-up{animation:fadeInUp .8s ease-in-out}@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}.action-btn{background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple));transition:all .3s ease;box-shadow:0 4px 15px rgba(0,0,0,.2)}.action-btn:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(139,92,246,.4)}.logo{font-weight:700;font-size:1.5rem;letter-spacing:1px;background:linear-gradient(90deg,#e0e0e0,#a0a0a0);-webkit-background-clip:text;background-clip:text;color:transparent}.input-field{background:rgba(0,0,0,.3);border:1px solid var(--border-color);border-radius:.5rem;padding:.75rem;color:#fff;transition:border-color .3s}.input-field:focus{outline:0;border-color:var(--accent-blue)}.todo-item{display:flex;align-items:center;gap:.75rem;padding:.5rem 0}.todo-item input:checked+label{text-decoration:line-through;color:#6b7280}.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);z-index:40;display:flex;align-items:center;justify-content:center}.modal-content{background:#111827;padding:2rem;border-radius:1rem;border:1px solid var(--border-color);width:90%;max-width:500px}
+        :root{--background-color:#0A0A10;--tile-bg:rgba(20,20,35,0.4);--tile-hover-bg:rgba(30,30,50,0.6);--border-color:rgba(255,255,255,0.1);--accent-purple:#a855f7;--accent-blue:#3b82f6}body{font-family:'Inter',sans-serif;background-color:var(--background-color);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden}#background-animation{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:linear-gradient(315deg,rgba(168,85,247,0.1),transparent 40%),linear-gradient(45deg,rgba(59,130,246,0.1),transparent 40%),var(--background-color);animation:moveGradient 20s linear infinite}@keyframes moveGradient{0%{background-position:0 0}50%{background-position:100% 100%}100%{background-position:0 0}}.content-wrapper{position:relative;z-index:1;overflow-y:auto;height:100vh;scroll-behavior:smooth}.accent-gradient-text{background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple));-webkit-background-clip:text;background-clip:text;color:transparent}.widget,.tile{position:relative;background:var(--tile-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border-color);transition:all .3s cubic-bezier(.25,.8,.25,1)}.widget:hover,.tile:hover{background:var(--tile-hover-bg);transform:translateY(-8px) scale(1.03);box-shadow:0 10px 25px rgba(0,0,0,.3);border-color:var(--accent-purple)}.tile-icon{transition:all .3s ease}.tile:hover .tile-icon{transform:scale(1.1);color:#c084fc}.fade-in-up{animation:fadeInUp .8s ease-in-out}@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}.action-btn{background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple));transition:all .3s ease;box-shadow:0 4px 15px rgba(0,0,0,.2)}.action-btn:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(139,92,246,.4)}.logo{font-weight:700;font-size:1.5rem;letter-spacing:1px;background:linear-gradient(90deg,#e0e0e0,#a0a0a0);-webkit-background-clip:text;background-clip:text;color:transparent}.input-field{background:rgba(0,0,0,.3);border:1px solid var(--border-color);border-radius:.5rem;padding:.75rem;color:#fff;transition:border-color .3s}.input-field:focus{outline:0;border-color:var(--accent-blue)}.todo-item{display:flex;align-items:center;gap:.75rem;padding:.5rem 0}.todo-item input:checked+label{text-decoration:line-through;color:#6b7280}.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);z-index:40;display:flex;align-items:center;justify-content:center}.modal-content{background:#111827;padding:2rem;border-radius:1rem;border:1px solid var(--border-color);width:90%;max-width:500px}
+        .delete-btn{position:absolute;top:5px;right:5px;width:20px;height:20px;background:rgba(255,0,0,0.6);color:white;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;opacity:0;transition:opacity .2s ease-in-out}.tile:hover .delete-btn{opacity:1}
     </style>
 </head>
 <body class="h-full">
@@ -74,10 +75,7 @@
                 <div class="widget rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1"><h3 class="font-bold text-lg text-white mb-2"><i class="fas fa-note-sticky mr-2"></i>Schnelle Notiz</h3><textarea class="input-field w-full h-full resize-none" placeholder="Hier schreiben..."></textarea></div>
             </div>
             <h3 class="text-2xl font-bold mb-6 text-gray-200 border-l-4 border-blue-500 pl-4">Private Apps</h3>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5">
-                <a href="#" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square"><i class="fas fa-server text-blue-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">Hetzner</span></a>
-                <a href="#" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square"><i class="fas fa-chart-pie text-green-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">Finanzen</span></a>
-                <a href="#" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square"><i class="fas fa-brain text-pink-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">Gemini</span></a>
+            <div id="private-apps-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5">
                 <button id="add-app-button" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square border-dashed border-2 border-gray-600 hover:border-purple-500"><i class="fas fa-plus text-5xl text-gray-500 tile-icon"></i><span class="font-semibold text-center text-gray-400">Hinzufügen</span></button>
             </div>
         </main>
@@ -102,15 +100,29 @@
             </form>
         </div>
     </div>
+    
+    <div id="add-app-modal" class="modal-overlay hidden">
+        <div class="modal-content fade-in-up">
+            <h2 class="text-2xl font-bold mb-4">Neue App hinzufügen</h2>
+            <p id="add-app-error" class="text-red-400 mb-4 hidden"></p>
+            <form id="add-app-form" class="space-y-4">
+                <div><label for="app-name" class="block mb-2 text-sm font-medium text-gray-300">Name</label><input type="text" id="app-name" class="w-full input-field" required></div>
+                <div><label for="app-url" class="block mb-2 text-sm font-medium text-gray-300">URL</label><input type="url" id="app-url" class="w-full input-field" placeholder="https://beispiel.de" required></div>
+                <div class="mt-6 flex justify-end gap-4">
+                    <button type="button" id="cancel-add-app" class="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">Abbrechen</button>
+                    <button type="submit" id="save-add-app" class="py-2 px-4 action-btn rounded-lg">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         // --- Hilfsfunktionen ---
         function getCalendarWeek(date) {
-            const currentThursday = new Date(date.valueOf());
-            currentThursday.setDate(currentThursday.getDate() - ((date.getDay() + 6) % 7) + 3);
-            const firstThursday = new Date(currentThursday.getFullYear(), 0, 4);
-            firstThursday.setDate(firstThursday.getDate() - ((firstThursday.getDay() + 6) % 7) + 3);
-            return Math.round((new Date(currentThursday.valueOf()) - firstThursday.valueOf()) / 86400000 / 7 + 1);
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         }
 
         function updateClock() {
@@ -145,236 +157,253 @@
 
         // --- Datenladefunktionen ---
         function fetchWeatherData() {
-            const weatherWidget = document.getElementById("weather-widget");
-            if (!weatherWidget) return;
-            const cityEl = weatherWidget.querySelector("h2");
-            const tempEl = weatherWidget.querySelector("p:nth-of-type(1)");
-            const descEl = weatherWidget.querySelector("p:nth-of-type(2)");
-            const iconEl = weatherWidget.querySelector("i");
-            fetch("/api/weather")
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    return res.json();
-                })
-                .then(data => {
-                    if (data.error) throw new Error(data.error);
-                    cityEl.textContent = data.city;
-                    tempEl.textContent = `${data.temperature}°C`;
-                    descEl.textContent = data.description;
-                    iconEl.className = getWeatherIconClass(data.icon);
-                })
-                .catch(err => {
-                    console.error("Wetter-Fehler:", err);
-                    cityEl.textContent = "Wetter-Fehler";
-                });
+            const el = {
+                widget: document.getElementById("weather-widget"),
+                city: document.querySelector("#weather-widget h2"),
+                temp: document.querySelector("#weather-widget p:nth-of-type(1)"),
+                desc: document.querySelector("#weather-widget p:nth-of-type(2)"),
+                icon: document.querySelector("#weather-widget i"),
+            };
+            if (!el.widget) return;
+            
+            fetch("/api/weather").then(res => res.json()).then(data => {
+                if (data.error) throw new Error(data.error);
+                el.city.textContent = data.city;
+                el.temp.textContent = `${data.temperature}°C`;
+                el.desc.textContent = data.description;
+                el.icon.className = getWeatherIconClass(data.icon);
+            }).catch(err => {
+                console.error("Wetter-Fehler:", err);
+                el.city.textContent = "Wetter-Fehler";
+            });
         }
 
         function fetchRssData() {
-            const rssWidgetList = document.querySelector("#rss-widget ul");
-            if (!rssWidgetList) return;
-            fetch("/api/rss")
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    return res.json();
-                })
-                .then(items => {
-                    rssWidgetList.innerHTML = "";
-                    if (!items || items.length === 0) {
-                         rssWidgetList.innerHTML = "<li>Keine Artikel gefunden.</li>";
-                         return;
-                    }
-                    items.forEach(item => {
-                        const li = document.createElement("li");
-                        li.className = "truncate";
-                        li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
-                        rssWidgetList.appendChild(li);
-                    });
-                })
-                .catch(err => {
-                    console.error("RSS-Fehler:", err);
-                    rssWidgetList.innerHTML = "<li>Feed konnte nicht geladen werden.</li>";
+            const list = document.querySelector("#rss-widget ul");
+            if (!list) return;
+            fetch("/api/rss").then(res => res.json()).then(items => {
+                list.innerHTML = "";
+                if (!items || items.length === 0) {
+                    list.innerHTML = "<li>Keine Artikel gefunden.</li>";
+                    return;
+                }
+                items.forEach(item => {
+                    const li = document.createElement("li");
+                    li.className = "truncate";
+                    li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
+                    list.appendChild(li);
                 });
+            }).catch(err => {
+                console.error("RSS-Fehler:", err);
+                list.innerHTML = "<li>Feed konnte nicht geladen werden.</li>";
+            });
         }
 
         function updateSpotifyWidget() {
             const widget = document.getElementById('spotify-widget');
             if (!widget) return;
-            fetch('/api/spotify/player')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) {
-                        widget.innerHTML = `<p class="text-red-400">Spotify Fehler</p>`;
-                        return;
-                    }
-                    if (!data.connected) {
-                        widget.innerHTML = `
-                            <i class="fab fa-spotify text-5xl text-green-500 mb-3"></i>
-                            <h3 class="text-xl font-bold">Spotify verbinden</h3>
-                            <button onclick="window.location.href='/connect/spotify'" class="mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg text-sm">Verbinden</button>
-                        `;
-                    } else if (data.item) {
-                        widget.innerHTML = `
-                            <div class="flex gap-6 items-center w-full">
-                                <img src="${data.item.album.images[0].url}" alt="Album Art" class="w-24 h-24 rounded-lg shadow-lg">
-                                <div class="text-left flex-grow">
-                                    <h3 class="font-bold text-lg truncate">${data.item.name}</h3>
-                                    <p class="text-gray-400 truncate">${data.item.artists.map(a => a.name).join(', ')}</p>
-                                    <div class="flex items-center gap-4 mt-2">
-                                        <button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-backward-step"></i></button>
-                                        <button class="text-4xl hover:text-white">${data.is_playing ? '<i class="fas fa-pause-circle"></i>' : '<i class="fas fa-play-circle"></i>'}</button>
-                                        <button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-forward-step"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                         widget.innerHTML = `<p>Auf keinem Gerät wird Musik abgespielt.</p>`;
-                    }
+            fetch('/api/spotify/player').then(res => res.json()).then(data => {
+                if (data.error) {
+                    widget.innerHTML = `<p class="text-red-400">Spotify Fehler</p>`;
+                } else if (!data.connected) {
+                    widget.innerHTML = `<i class="fab fa-spotify text-5xl text-green-500 mb-3"></i><h3 class="text-xl font-bold">Spotify verbinden</h3><button onclick="window.location.href='/connect/spotify'" class="mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg text-sm">Verbinden</button>`;
+                } else if (data.item) {
+                    widget.innerHTML = `<div class="flex gap-6 items-center w-full"><img src="${data.item.album.images[0].url}" alt="Album Art" class="w-24 h-24 rounded-lg shadow-lg"><div class="text-left flex-grow"><h3 class="font-bold text-lg truncate">${data.item.name}</h3><p class="text-gray-400 truncate">${data.item.artists.map(a=>a.name).join(', ')}</p><div class="flex items-center gap-4 mt-2"><button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-backward-step"></i></button><button class="text-4xl hover:text-white">${data.is_playing?'<i class="fas fa-pause-circle"></i>':'<i class="fas fa-play-circle"></i>'}</button><button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-forward-step"></i></button></div></div></div>`;
+                } else {
+                    widget.innerHTML = `<p>Auf keinem Gerät wird Musik abgespielt.</p>`;
+                }
+            }).catch(err => {
+                widget.innerHTML = `<p class="text-red-400">Spotify Status konnte nicht geladen werden.</p>`;
+            });
+        }
+
+        function renderApps(apps) {
+            const container = document.getElementById('private-apps-container');
+            if (!container) return;
+            document.querySelectorAll('.app-tile').forEach(tile => tile.remove());
+            apps.forEach(app => addAppTileToDOM(app));
+        }
+
+        function addAppTileToDOM(app) {
+            const container = document.getElementById('private-apps-container');
+            if (!container) return;
+            const tileLink = document.createElement('a');
+            tileLink.href = app.url;
+            tileLink.target = "_blank";
+            tileLink.className = "app-tile tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square";
+            tileLink.dataset.id = app.id;
+            tileLink.innerHTML = `<button class="delete-btn" data-id="${app.id}"><i class="fas fa-times"></i></button><i class="${app.icon || 'fas fa-globe'} text-blue-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">${app.name}</span>`;
+            container.insertBefore(tileLink, document.getElementById('add-app-button'));
+            tileLink.querySelector('.delete-btn').addEventListener('click', e => {
+                e.preventDefault(); e.stopPropagation();
+                deleteApp(app.id);
+            });
+        }
+
+        function deleteApp(appId) {
+            if (!confirm('Möchten Sie diese App wirklich löschen?')) return;
+            fetch(`/api/apps/${appId}`, { method: 'DELETE' })
+                .then(res => {
+                    if (!res.ok) throw new Error('Löschen fehlgeschlagen');
+                    document.querySelector(`.app-tile[data-id='${appId}']`).remove();
                 })
-                .catch(err => {
-                    widget.innerHTML = `<p class="text-red-400">Spotify Status konnte nicht geladen werden.</p>`;
-                    console.error('Spotify Widget Fehler:', err);
-                });
+                .catch(err => alert('App konnte nicht gelöscht werden.'));
+        }
+
+        function fetchApps() {
+            fetch('/api/apps').then(res => res.json()).then(response => {
+                if (response.data) renderApps(response.data);
+            }).catch(err => console.error("Fehler beim Laden der Apps:", err));
         }
 
         // --- HAUPTLOGIK & EVENT LISTENERS ---
         document.addEventListener("DOMContentLoaded", () => {
-            const authButton = document.getElementById('auth-button');
-            const publicView = document.getElementById('public-view');
-            const privateView = document.getElementById('private-view');
-            const userGreeting = document.getElementById('user-greeting');
-            const loginModal = document.getElementById('login-modal');
-            const loginForm = document.getElementById('login-form');
-            const cancelLoginBtn = document.getElementById('cancel-login');
-            const loginErrorMsg = document.getElementById('login-error');
-            const routeStartBtn = document.getElementById("route-start-btn");
-            const addAppButton = document.getElementById("add-app-button");
-            
+            const ui = {
+                authButton: document.getElementById('auth-button'),
+                publicView: document.getElementById('public-view'),
+                privateView: document.getElementById('private-view'),
+                userGreeting: document.getElementById('user-greeting'),
+                loginModal: document.getElementById('login-modal'),
+                loginForm: document.getElementById('login-form'),
+                cancelLoginBtn: document.getElementById('cancel-login'),
+                loginErrorMsg: document.getElementById('login-error'),
+                addAppModal: document.getElementById('add-app-modal'),
+                addAppForm: document.getElementById('add-app-form'),
+                addAppButton: document.getElementById('add-app-button'),
+                cancelAddAppBtn: document.getElementById('cancel-add-app'),
+                addAppErrorMsg: document.getElementById('add-app-error'),
+                routeStartBtn: document.getElementById("route-start-btn"),
+                shortenBtn: document.getElementById('shorten-btn'),
+                copyBtn: document.getElementById('copy-btn'),
+            };
+
             function toggleView(isLoggedIn, username = '') {
                 if (isLoggedIn) {
-                    publicView.classList.add('hidden');
-                    privateView.classList.remove('hidden');
-                    userGreeting.querySelector('span').textContent = username;
-                    userGreeting.classList.remove('hidden');
-                    authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
-                    authButton.onclick = () => { window.location.href = '/logout'; };
+                    ui.publicView.classList.add('hidden');
+                    ui.privateView.classList.remove('hidden');
+                    ui.userGreeting.querySelector('span').textContent = username;
+                    ui.userGreeting.classList.remove('hidden');
+                    ui.authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
+                    ui.authButton.onclick = () => { window.location.href = '/logout'; };
                 } else {
-                    publicView.classList.remove('hidden');
-                    privateView.classList.add('hidden');
-                    userGreeting.classList.add('hidden');
-                    authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
-                    authButton.onclick = () => { loginModal.classList.remove('hidden'); };
+                    ui.publicView.classList.remove('hidden');
+                    ui.privateView.classList.add('hidden');
+                    ui.userGreeting.classList.add('hidden');
+                    ui.authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
+                    ui.authButton.onclick = () => { ui.loginModal.classList.remove('hidden'); };
                 }
             }
 
-            // Initialisierung
+            // --- Initialisierung ---
             updateClock();
             setInterval(updateClock, 60000);
 
-            // Login-Status prüfen und dann die Ansicht aktualisieren
-            fetch("/api/auth/status")
-                .then(res => res.json())
-                .then(data => {
-                    toggleView(data.loggedIn, data.username);
-                    if (data.loggedIn) {
-                        updateSpotifyWidget();
-                    } else {
-                        fetchWeatherData();
-                        fetchRssData();
-                    }
-                })
-                .catch(error => {
-                    console.error("Auth-Status-Fehler:", error);
-                    toggleView(false);
+            fetch("/api/auth/status").then(res => res.json()).then(data => {
+                toggleView(data.loggedIn, data.username);
+                if (data.loggedIn) {
+                    updateSpotifyWidget();
+                    fetchApps();
+                } else {
                     fetchWeatherData();
                     fetchRssData();
-                });
+                }
+            }).catch(err => {
+                console.error("Auth-Status-Fehler:", err);
+                toggleView(false);
+                fetchWeatherData();
+                fetchRssData();
+            });
 
-            // Event Listener für Login-Modal
-            cancelLoginBtn.addEventListener("click", () => loginModal.classList.add("hidden"));
-            loginForm.addEventListener("submit", e => {
+            // --- Event Listeners ---
+            ui.cancelLoginBtn.addEventListener("click", () => ui.loginModal.classList.add("hidden"));
+            ui.loginForm.addEventListener("submit", e => {
                 e.preventDefault();
                 const username = document.getElementById("username").value;
                 const pin = document.getElementById("pin").value;
-                loginErrorMsg.classList.add("hidden");
+                ui.loginErrorMsg.classList.add("hidden");
                 fetch("/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, pin })
                 }).then(res => res.json().then(data => ({ status: res.status, body: data }))).then(({ status, body }) => {
-                    if (status !== 200) { throw new Error(body.error || "Login fehlgeschlagen"); }
+                    if (status !== 200) throw new Error(body.error || "Login fehlgeschlagen");
                     window.location.reload();
                 }).catch(err => {
-                    loginErrorMsg.textContent = err.message;
-                    loginErrorMsg.classList.remove("hidden");
+                    ui.loginErrorMsg.textContent = err.message;
+                    ui.loginErrorMsg.classList.remove("hidden");
                 });
             });
 
-            // Event Listener für Routenplaner
-            if (routeStartBtn) {
-                routeStartBtn.addEventListener("click", () => {
+            if (ui.routeStartBtn) {
+                ui.routeStartBtn.addEventListener("click", () => {
                     const start = document.getElementById("route-start").value;
                     const destination = document.getElementById("route-destination").value;
                     if (!start || !destination) {
-                        routeStartBtn.textContent = "Bitte alles ausfüllen!";
-                        routeStartBtn.classList.add("bg-red-500");
+                        ui.routeStartBtn.textContent = "Bitte alles ausfüllen!";
+                        ui.routeStartBtn.classList.add("bg-red-500");
                         setTimeout(() => {
-                            routeStartBtn.textContent = "Route starten";
-                            routeStartBtn.classList.remove("bg-red-500");
+                            ui.routeStartBtn.textContent = "Route starten";
+                            ui.routeStartBtn.classList.remove("bg-red-500");
                         }, 2000);
                         return;
                     }
-                    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(destination)}`;
-                    window.open(mapsUrl, "_blank");
+                    window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(destination)}`, "_blank");
                 });
             }
-
-            // Event Listener für URL Shortener
-            const shortenBtn = document.getElementById('shorten-btn');
-            if(shortenBtn) {
-                const longUrlInput = document.getElementById('long-url-input');
-                const resultDiv = document.getElementById('short-url-result');
-                const shortUrlOutput = document.getElementById('short-url-output');
-                const copyBtn = document.getElementById('copy-btn');
-
-                shortenBtn.addEventListener('click', () => {
+            
+            if (ui.shortenBtn) {
+                ui.shortenBtn.addEventListener('click', () => {
+                    const longUrlInput = document.getElementById('long-url-input');
                     const longUrl = longUrlInput.value;
-                    if (!longUrl || !longUrl.startsWith('http')) {
-                        alert('Bitte geben Sie eine gültige URL ein.');
-                        return;
-                    }
-                    shortenBtn.disabled = true;
-                    shortenBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    if (!longUrl || !longUrl.startsWith('http')) return alert('Bitte eine gültige URL eingeben.');
+                    ui.shortenBtn.disabled = true;
+                    ui.shortenBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     fetch('/api/shorten', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ url: longUrl })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
+                    }).then(res => res.json()).then(data => {
                         if (data.error) throw new Error(data.error);
-                        shortUrlOutput.value = data.shortUrl;
-                        resultDiv.classList.remove('hidden');
-                    })
-                    .catch(err => alert(err.message))
-                    .finally(() => {
-                        shortenBtn.disabled = false;
-                        shortenBtn.innerHTML = 'Kürzen';
+                        document.getElementById('short-url-output').value = data.shortUrl;
+                        document.getElementById('short-url-result').classList.remove('hidden');
+                    }).catch(err => alert(err.message)).finally(() => {
+                        ui.shortenBtn.disabled = false;
+                        ui.shortenBtn.innerHTML = 'Kürzen';
                     });
-                });
-                
-                copyBtn.addEventListener('click', () => {
-                    shortUrlOutput.select();
-                    document.execCommand('copy');
-                    copyBtn.innerHTML = '<i class="fas fa-check text-green-500"></i>';
-                    setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i>'; }, 2000);
                 });
             }
 
-            // Platzhalter für 'App hinzufügen' Modal
-            if (addAppButton) {
-                // Diese Logik muss noch erstellt werden
+            if (ui.copyBtn) {
+                ui.copyBtn.addEventListener('click', () => {
+                    const output = document.getElementById('short-url-output');
+                    output.select();
+                    document.execCommand('copy');
+                    ui.copyBtn.innerHTML = '<i class="fas fa-check text-green-500"></i>';
+                    setTimeout(() => { ui.copyBtn.innerHTML = '<i class="fas fa-copy"></i>'; }, 2000);
+                });
             }
+            
+            ui.addAppButton.addEventListener('click', () => ui.addAppModal.classList.remove('hidden'));
+            ui.cancelAddAppBtn.addEventListener('click', () => ui.addAppModal.classList.add('hidden'));
+            ui.addAppForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const name = document.getElementById('app-name').value;
+                const url = document.getElementById('app-url').value;
+                ui.addAppErrorMsg.classList.add('hidden');
+                fetch('/api/apps/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, url })
+                }).then(res => res.json()).then(response => {
+                    if (response.error) throw new Error(response.error);
+                    addAppTileToDOM(response.data);
+                    ui.addAppModal.classList.add('hidden');
+                    ui.addAppForm.reset();
+                }).catch(err => {
+                    ui.addAppErrorMsg.textContent = err.message;
+                    ui.addAppErrorMsg.classList.remove('hidden');
+                });
+            });
         });
     </script>
 </body>

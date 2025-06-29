@@ -32,7 +32,7 @@ const isLoggedIn = (req, res, next) => {
     res.status(401).json({ error: 'Nicht autorisiert' });
 };
 
-// --- API & AUTH ROUTES ---
+// --- AUTH & CORE ROUTES ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
 
 app.post('/login', (req, res) => {
@@ -54,6 +54,7 @@ app.post('/login', (req, res) => {
 app.get('/logout', (req, res) => req.session.destroy(() => res.redirect('/')));
 app.get('/api/auth/status', (req, res) => res.json({ loggedIn: !!req.session.userId, username: req.session.username }));
 
+// --- SPOTIFY ROUTES ---
 app.get('/connect/spotify', isLoggedIn, (req, res) => {
     const scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state';
     res.redirect('https://accounts.spotify.com/authorize?' + new URLSearchParams({
@@ -100,6 +101,7 @@ app.get('/api/spotify/player', isLoggedIn, async (req, res) => {
     });
 });
 
+// --- WIDGET API ROUTES ---
 app.get('/api/rss', async (req, res) => {
     const feedUrl = 'https://www.tagesschau.de/newsticker.rdf';
     try {
@@ -122,6 +124,7 @@ app.get('/api/weather', async (req, res) => {
     }
 });
 
+// --- URL-SHORTENER-ROUTEN ---
 app.post('/api/shorten', async (req, res) => {
     const { url } = req.body;
     if (!url || !url.startsWith('http')) {
@@ -136,10 +139,62 @@ app.post('/api/shorten', async (req, res) => {
     });
 });
 
-// --- Redirect Route MUSS ALS LETZTE ROUTE STEHEN ---
+
+// --- NEUE APP-KACHELN API ---
+
+// Route zum Abrufen aller Apps für den eingeloggten Benutzer
+app.get('/api/apps', isLoggedIn, (req, res) => {
+    const sql = "SELECT * FROM apps WHERE user_id = ?";
+    db.all(sql, [req.session.userId], (err, rows) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": rows
+        });
+    });
+});
+
+// Route zum Hinzufügen einer neuen App
+app.post('/api/apps/add', isLoggedIn, (req, res) => {
+    const { name, url } = req.body;
+    const defaultIcon = "fas fa-globe"; 
+    
+    const sql = 'INSERT INTO apps (name, url, icon, user_id) VALUES (?,?,?,?)';
+    db.run(sql, [name, url, defaultIcon, req.session.userId], function(err) {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": { id: this.lastID, name, url, icon: defaultIcon }
+        });
+    });
+});
+
+// Route zum Löschen einer App
+app.delete('/api/apps/:id', isLoggedIn, (req, res) => {
+    const sql = 'DELETE FROM apps WHERE id = ? AND user_id = ?';
+    db.run(sql, [req.params.id, req.session.userId], function(err) {
+        if (err) {
+            res.status(400).json({"error": res.message});
+            return;
+        }
+        if (this.changes > 0) {
+            res.json({"message": `App ${req.params.id} gelöscht`});
+        } else {
+            res.status(404).json({"error": "App nicht gefunden oder keine Berechtigung."});
+        }
+    });
+});
+
+
+// --- Redirect Route ---
 app.get('/:shortCode', (req, res, next) => {
     const { shortCode } = req.params;
-    // Ignoriere Anfragen, die wahrscheinlich für statische Dateien sind
     if (shortCode.includes('.')) {
         return next();
     }
@@ -148,12 +203,11 @@ app.get('/:shortCode', (req, res, next) => {
         if (row) {
             res.redirect(row.original_url);
         } else {
-            // Wenn die URL nicht gefunden wird, behandeln wir sie nicht und lassen einen 404-Fehler von Express zu
             next();
         }
     });
 });
 
-
 // --- SERVER START ---
 app.listen(PORT, () => console.log(`[WF-Dashboard] Server läuft auf Port ${PORT}`));
+
