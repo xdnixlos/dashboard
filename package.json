@@ -1,0 +1,15 @@
+{
+  "name": "wf-dashboard",
+  "version": "1.0.0",
+  "description": "Personalisiertes Dashboard für WF-TECH",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "WF-TECH",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

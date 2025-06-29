@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full text-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WF-TECH Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --background-color: #0A0A10;
+            --tile-bg: rgba(20, 20, 35, 0.4);
+            --tile-hover-bg: rgba(30, 30, 50, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-purple: #a855f7;
+            --accent-blue: #3b82f6;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--background-color); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow: hidden; }
+        #background-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(315deg, rgba(168, 85, 247, 0.1), transparent 40%), linear-gradient(45deg, rgba(59, 130, 246, 0.1), transparent 40%), var(--background-color); animation: moveGradient 20s linear infinite; }
+        @keyframes moveGradient { 0% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } 100% { background-position: 0% 0%; } }
+        .content-wrapper { position: relative; z-index: 1; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
+        .accent-gradient-text { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; }
+        .widget, .tile { background: var(--tile-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-color); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .widget:hover, .tile:hover { background: var(--tile-hover-bg); transform: translateY(-8px) scale(1.03); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border-color: var(--accent-purple); }
+        .tile-icon { transition: all 0.3s ease; }
+        .tile:hover .tile-icon { transform: scale(1.1); color: #c084fc; }
+        .fade-in-up { animation: fadeInUp 0.8s ease-in-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .action-btn { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+        .action-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); }
+        .logo { font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; background: linear-gradient(90deg, #e0e0e0, #a0a0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* New Widget Styles */
+        .input-field { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.75rem; color: white; transition: border-color 0.3s; }
+        .input-field:focus { outline: none; border-color: var(--accent-blue); }
+        .todo-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; }
+        .todo-item input:checked + label { text-decoration: line-through; color: #6b7280; }
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 40; display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: #111827; padding: 2rem; border-radius: 1rem; border: 1px solid var(--border-color); width: 90%; max-width: 500px; }
+    </style>
+</head>
+<body class="h-full">
+    <div id="background-animation"></div>
+    <div id="app" class="content-wrapper p-4 sm:p-6 lg:p-8 flex flex-col fade-in-up">
+        
+        <header class="mb-8 flex flex-col sm:flex-row justify-between items-center gap-6 w-full">
+            <div class="logo">WF-TECH</div>
+            <div class="text-center sm:text-right">
+                <h1 id="time" class="text-5xl font-bold accent-gradient-text">10:30</h1>
+                <p id="date" class="text-lg text-gray-400">Sonntag, 23. Juni 2024</p>
+                <p id="calendar-week" class="text-sm text-gray-500 font-semibold mt-1">KW 25</p>
+            </div>
+        </header>
+
+        <!-- =========== PUBLIC VIEW =========== -->
+        <main id="public-view" class="flex-grow w-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                <div class="widget rounded-2xl p-6 flex justify-between items-center"><div><h2 class="text-xl font-semibold text-gray-400">München</h2><p class="text-4xl font-bold text-gray-200">15°C</p><p class="text-gray-400">Leichter Regen</p></div><i class="fas fa-cloud-sun-rain text-6xl text-blue-300"></i></div>
+                <div class="widget rounded-2xl p-6"> <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-route mr-2"></i>Routenplaner</h3> <input class="w-full input-field mb-2" placeholder="Start..."> <input class="w-full input-field" placeholder="Ziel..."> <button class="w-full mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg">Route starten</button> </div>
+                <div class="widget rounded-2xl p-6 md:col-span-2 lg:col-span-1"> <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-rss mr-2"></i>Tech News</h3> <ul class="text-gray-300 space-y-2 text-sm"> <li class="truncate"> <a href="#" class="hover:text-white">Neues KI-Modell übertrifft Erwartungen</a> </li> <li class="truncate"> <a href="#" class="hover:text-white">Proxmox 9.0 mit neuen Features angekündigt</a> </li> <li class="truncate"> <a href="#" class="hover:text-white">Die Zukunft des Self-Hosting: Trends 2025</a> </li> <li class="truncate"> <a href="#" class="hover:text-white">Sicherheitslücke in verbreiteter Library</a> </li> </ul> </div>
+            </div>
+            <h3 class="text-2xl font-bold mb-6 text-gray-200 border-l-4 border-purple-500 pl-4">Öffentliche Links</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5">
+                <a href="https://youtube.com" target="_blank" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square"><i class="fab fa-youtube text-red-500 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">YouTube</span></a>
+                <a href="https://wikipedia.org" target="_blank" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square"><i class="fab fa-wikipedia-w text-gray-300 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">Wikipedia</span></a>
+            </div>
+        </main>
+        
+        <!-- =========== PRIVATE (LOGGED-IN) VIEW =========== -->
+        <main id="private-view" class="flex-grow w-full hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                <div class="widget rounded-2xl p-6 flex gap-6 items-center"> <img src="https://placehold.co/100x100/1DB954/FFFFFF?text=Spotify" alt="Album Art" style="width: 100px; height: 100px; border-radius: 0.75rem;"> <div> <h3 class="font-bold text-lg">Song Title</h3> <p class="text-gray-400">Artist Name</p> <div class="flex items-center gap-4 mt-2"> <button class="text-2xl hover:text-white transition-colors"><i class="fas fa-backward-step"></i></button> <button class="text-4xl hover:text-white transition-colors"><i class="fas fa-pause-circle"></i></button> <button class="text-2xl hover:text-white transition-colors"><i class="fas fa-forward-step"></i></button> </div> </div> </div>
+                <div class="widget rounded-2xl p-6"> <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-list-check mr-2"></i>To-Do Liste</h3> <div class="space-y-2 text-gray-200"> <div class="todo-item"><input type="checkbox" id="todo1" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded"><label for="todo1">Proxmox Backup konfigurieren</label></div> <div class="todo-item"><input type="checkbox" id="todo2" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded" checked><label for="todo2">Neuen LXC für Dashboard erstellen</label></div> <div class="todo-item"><input type="checkbox" id="todo3" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded"><label for="todo3">Domain für Dashboard einrichten</label></div> </div> <input class="w-full input-field mt-3" placeholder="Neue Aufgabe..."></div>
+                <div class="widget rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1"> <h3 class="font-bold text-lg text-white mb-2"><i class="fas fa-note-sticky mr-2"></i>Schnelle Notiz</h3> <textarea class="input-field w-full h-full resize-none" placeholder="Hier schreiben..."></textarea> </div>
+            </div>
+            <h3 class="text-2xl font-bold mb-6 text-gray-200 border-l-4 border-blue-500 pl-4">Private Apps</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5">
+                <a href="#" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square"><i class="fas fa-server text-blue-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">Hetzner</span></a>
+                <a href="#" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square"><i class="fas fa-chart-pie text-green-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">Finanzen</span></a>
+                <a href="#" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square"><i class="fas fa-brain text-pink-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">Gemini</span></a>
+                <button id="add-app-button" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square border-dashed border-2 border-gray-600 hover:border-purple-500"><i class="fas fa-plus text-5xl text-gray-500 tile-icon"></i><span class="font-semibold text-center text-gray-400">Hinzufügen</span></button>
+            </div>
+        </main>
+
+        <footer class="mt-12 text-gray-500 flex justify-between items-center w-full"> <p>Powered by <span class="font-bold">WF-Group</span></p> <button id="auth-button" class="action-btn text-white font-bold py-3 px-6 rounded-lg"> <i class="fas fa-lock mr-2"></i> Anmelden </button> </footer>
+    </div>
+
+    <!-- Modal for adding a new App -->
+    <div id="add-app-modal" class="modal-overlay hidden">
+        <div class="modal-content fade-in-up">
+            <h2 class="text-2xl font-bold mb-4">Neue App hinzufügen</h2>
+            <p class="text-gray-400 mb-6">Geben Sie die URL und einen Namen für die neue Kachel ein.</p>
+            <div class="space-y-4">
+                <div> <label for="app-name" class="block mb-2 text-sm font-medium text-gray-300">Anzeigename</label> <input type="text" id="app-name" class="w-full input-field" placeholder="z.B. Proxmox Server"> </div>
+                <div> <label for="app-url" class="block mb-2 text-sm font-medium text-gray-300">URL</label> <input type="url" id="app-url" class="w-full input-field" placeholder="https://mein-server.de"> </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-4">
+                <button id="cancel-add-app" class="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">Abbrechen</button>
+                <button id="save-add-app" class="py-2 px-4 action-btn rounded-lg">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Clock & Date
+        const timeElement = document.getElementById('time');
+        const dateElement = document.getElementById('date');
+        const kwElement = document.getElementById('calendar-week');
+        function getCalendarWeek(date) {
+            const currentThursday = new Date(date.valueOf());
+            currentThursday.setDate(currentThursday.getDate() - ((date.getDay() + 6) % 7) + 3);
+            const firstThursday = new Date(currentThursday.getFullYear(), 0, 4);
+            firstThursday.setDate(firstThursday.getDate() - ((firstThursday.getDay() + 6) % 7) + 3);
+            const ds = firstThursday.valueOf();
+            const de = currentThursday.valueOf();
+            return Math.round((de - ds) / (86400000 * 7) + 1);
+        }
+        function updateClock() {
+            const now = new Date();
+            timeElement.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            dateElement.textContent = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            kwElement.textContent = `KW ${getCalendarWeek(now)}`;
+        }
+        setInterval(updateClock, 60000); updateClock();
+
+        // View Toggling
+        const authButton = document.getElementById('auth-button');
+        const publicView = document.getElementById('public-view');
+        const privateView = document.getElementById('private-view');
+        let isLoggedIn = false;
+        authButton.addEventListener('click', () => { isLoggedIn = !isLoggedIn; updateView(); });
+        function updateView() {
+            if (isLoggedIn) {
+                publicView.classList.add('hidden');
+                privateView.classList.remove('hidden');
+                authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
+            } else {
+                publicView.classList.remove('hidden');
+                privateView.classList.add('hidden');
+                authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
+            }
+        }
+        
+        // Modal Logic
+        const addAppModal = document.getElementById('add-app-modal');
+        const addAppButton = document.getElementById('add-app-button');
+        const cancelAppButton = document.getElementById('cancel-add-app');
+        const saveAppButton = document.getElementById('save-add-app');
+
+        addAppButton.addEventListener('click', () => addAppModal.classList.remove('hidden'));
+        cancelAppButton.addEventListener('click', () => addAppModal.classList.add('hidden'));
+        saveAppButton.addEventListener('click', () => {
+            // Hier kommt später die Logik zum Speichern
+            alert('App wird gespeichert! (Dies ist eine Demo)');
+            addAppModal.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
