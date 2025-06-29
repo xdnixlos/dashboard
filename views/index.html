@@ -135,7 +135,10 @@
             const descEl = weatherWidget.querySelector("p:nth-of-type(2)");
             const iconEl = weatherWidget.querySelector("i");
             fetch("/api/weather")
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    return res.json();
+                })
                 .then(data => {
                     if (data.error) throw new Error(data.error);
                     cityEl.textContent = data.city;
@@ -153,9 +156,16 @@
             const rssWidgetList = document.querySelector("#rss-widget ul");
             if (!rssWidgetList) return;
             fetch("/api/rss")
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    return res.json();
+                })
                 .then(items => {
                     rssWidgetList.innerHTML = "";
+                    if (!items || items.length === 0) {
+                         rssWidgetList.innerHTML = "<li>Keine Artikel gefunden.</li>";
+                         return;
+                    }
                     items.forEach(item => {
                         const li = document.createElement("li");
                         li.className = "truncate";
@@ -212,7 +222,6 @@
 
         // --- HAUPTLOGIK & EVENT LISTENERS ---
         document.addEventListener("DOMContentLoaded", () => {
-            // Elemente definieren
             const authButton = document.getElementById('auth-button');
             const publicView = document.getElementById('public-view');
             const privateView = document.getElementById('private-view');
@@ -224,7 +233,6 @@
             const routeStartBtn = document.getElementById("route-start-btn");
             const addAppButton = document.getElementById("add-app-button");
             
-            // Ansicht basierend auf Login-Status umschalten
             function toggleView(isLoggedIn, username = '') {
                 if (isLoggedIn) {
                     publicView.classList.add('hidden');
@@ -246,19 +254,24 @@
             updateClock();
             setInterval(updateClock, 60000);
 
-            // Öffentliche Daten immer laden
-            fetchWeatherData();
-            fetchRssData();
-
-            // Login-Status prüfen und ggf. private Daten laden
-            fetch("/api/auth/status").then(res => res.json()).then(data => {
-                toggleView(data.loggedIn, data.username);
-                if (data.loggedIn) {
-                    updateSpotifyWidget();
-                }
-            }).catch(() => {
-                toggleView(false);
-            });
+            // Login-Status prüfen und dann die Ansicht aktualisieren
+            fetch("/api/auth/status")
+                .then(res => res.json())
+                .then(data => {
+                    toggleView(data.loggedIn, data.username);
+                    if (data.loggedIn) {
+                        updateSpotifyWidget();
+                    } else {
+                        fetchWeatherData();
+                        fetchRssData();
+                    }
+                })
+                .catch(error => {
+                    console.error("Auth-Status-Fehler:", error);
+                    toggleView(false);
+                    fetchWeatherData();
+                    fetchRssData();
+                });
 
             // Event Listener für Login-Modal
             cancelLoginBtn.addEventListener("click", () => loginModal.classList.add("hidden"));
@@ -271,11 +284,13 @@
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, pin })
-                }).then(res => res.json().then(data => ({ status: res.status, body: data }))).then(({ status, body }) => {
+                })
+                .then(res => res.json().then(data => ({ status: res.status, body: data })))
+                .then(({ status, body }) => {
                     if (status !== 200) { throw new Error(body.error || "Login fehlgeschlagen"); }
-                    loginModal.classList.add("hidden");
                     window.location.reload();
-                }).catch(err => {
+                })
+                .catch(err => {
                     loginErrorMsg.textContent = err.message;
                     loginErrorMsg.classList.remove("hidden");
                 });
@@ -302,9 +317,7 @@
 
             // Platzhalter für 'App hinzufügen' Modal
             if (addAppButton) {
-                const addAppModal = document.getElementById("add-app-modal");
-                // Diese Logik muss noch erstellt werden
-                // addAppButton.addEventListener('click', () => addAppModal.classList.remove('hidden'));
+                // Hier kommt später die Logik für das App-Hinzufügen-Modal hin
             }
         });
     </script>
