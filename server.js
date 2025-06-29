@@ -139,50 +139,30 @@ app.post('/api/shorten', async (req, res) => {
     });
 });
 
-
-// --- NEUE APP-KACHELN API ---
-
-// Route zum Abrufen aller Apps für den eingeloggten Benutzer
+// --- APP-KACHELN API ---
 app.get('/api/apps', isLoggedIn, (req, res) => {
     const sql = "SELECT * FROM apps WHERE user_id = ?";
     db.all(sql, [req.session.userId], (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "data": rows
-        });
+        if (err) return res.status(400).json({"error": err.message});
+        res.json({ "data": rows });
     });
 });
 
-// Route zum Hinzufügen einer neuen App
 app.post('/api/apps/add', isLoggedIn, (req, res) => {
-    const { name, url } = req.body;
-    const defaultIcon = "fas fa-globe"; 
+    const { name, url, icon } = req.body;
+    const finalIcon = (icon && icon.trim() !== '') ? icon.trim() : "fas fa-globe";
     
     const sql = 'INSERT INTO apps (name, url, icon, user_id) VALUES (?,?,?,?)';
-    db.run(sql, [name, url, defaultIcon, req.session.userId], function(err) {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "data": { id: this.lastID, name, url, icon: defaultIcon }
-        });
+    db.run(sql, [name, url, finalIcon, req.session.userId], function(err) {
+        if (err) return res.status(400).json({"error": err.message});
+        res.json({ "data": { id: this.lastID, name, url, icon: finalIcon } });
     });
 });
 
-// Route zum Löschen einer App
 app.delete('/api/apps/:id', isLoggedIn, (req, res) => {
     const sql = 'DELETE FROM apps WHERE id = ? AND user_id = ?';
     db.run(sql, [req.params.id, req.session.userId], function(err) {
-        if (err) {
-            res.status(400).json({"error": res.message});
-            return;
-        }
+        if (err) return res.status(400).json({"error": err.message});
         if (this.changes > 0) {
             res.json({"message": `App ${req.params.id} gelöscht`});
         } else {
@@ -191,11 +171,10 @@ app.delete('/api/apps/:id', isLoggedIn, (req, res) => {
     });
 });
 
-
-// --- Redirect Route ---
+// --- Redirect Route MUSS ALS LETZTE ROUTE STEHEN ---
 app.get('/:shortCode', (req, res, next) => {
     const { shortCode } = req.params;
-    if (shortCode.includes('.')) {
+    if (shortCode.includes('.') || shortCode.startsWith('api')) { 
         return next();
     }
     db.get("SELECT original_url FROM urls WHERE short_code = ?", [shortCode], (err, row) => {
@@ -210,4 +189,3 @@ app.get('/:shortCode', (req, res, next) => {
 
 // --- SERVER START ---
 app.listen(PORT, () => console.log(`[WF-Dashboard] Server läuft auf Port ${PORT}`));
-

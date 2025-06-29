@@ -108,6 +108,11 @@
             <form id="add-app-form" class="space-y-4">
                 <div><label for="app-name" class="block mb-2 text-sm font-medium text-gray-300">Name</label><input type="text" id="app-name" class="w-full input-field" required></div>
                 <div><label for="app-url" class="block mb-2 text-sm font-medium text-gray-300">URL</label><input type="url" id="app-url" class="w-full input-field" placeholder="https://beispiel.de" required></div>
+                <div>
+                    <label for="app-icon" class="block mb-2 text-sm font-medium text-gray-300">Icon-Klasse (optional)</label>
+                    <input type="text" id="app-icon" class="w-full input-field" placeholder="z.B. fas fa-server">
+                    <p class="text-xs text-gray-500 mt-1">Vollständige Klasse von <a href="https://fontawesome.com/search?o=r&m=free" target="_blank" class="text-blue-400 hover:underline">Font Awesome</a>.</p>
+                </div>
                 <div class="mt-6 flex justify-end gap-4">
                     <button type="button" id="cancel-add-app" class="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">Abbrechen</button>
                     <button type="submit" id="save-add-app" class="py-2 px-4 action-btn rounded-lg">Speichern</button>
@@ -216,7 +221,6 @@
                 widget.innerHTML = `<p class="text-red-400">Spotify Status konnte nicht geladen werden.</p>`;
             });
         }
-
         function renderApps(apps) {
             const container = document.getElementById('private-apps-container');
             if (!container) return;
@@ -389,11 +393,12 @@
                 e.preventDefault();
                 const name = document.getElementById('app-name').value;
                 const url = document.getElementById('app-url').value;
+                const icon = document.getElementById('app-icon').value;
                 ui.addAppErrorMsg.classList.add('hidden');
                 fetch('/api/apps/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, url })
+                    body: JSON.stringify({ name, url, icon })
                 }).then(res => res.json()).then(response => {
                     if (response.error) throw new Error(response.error);
                     addAppTileToDOM(response.data);
