@@ -203,6 +203,42 @@
                 toggleView(data.loggedIn, data.username);
                 if (data.loggedIn) {
                     updateSpotifyWidget();
+                    // Load private data if logged in
+                } else {
+                    // Load public data if not logged in
+                    const rssWidgetList = document.querySelector("#rss-widget ul");
+                    if (rssWidgetList) {
+                        fetch("/api/rss").then(res => res.json()).then(items => {
+                            rssWidgetList.innerHTML = "";
+                            items.forEach(item => {
+                                const li = document.createElement("li");
+                                li.className = "truncate";
+                                li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
+                                rssWidgetList.appendChild(li);
+                            });
+                        }).catch(err => {
+                            console.error("RSS-Fehler:", err);
+                            rssWidgetList.innerHTML = "<li>Feed konnte nicht geladen werden.</li>";
+                        });
+                    }
+
+                    const weatherWidget = document.getElementById("weather-widget");
+                    if (weatherWidget) {
+                        const cityEl = weatherWidget.querySelector("h2");
+                        const tempEl = weatherWidget.querySelector("p:nth-of-type(1)");
+                        const descEl = weatherWidget.querySelector("p:nth-of-type(2)");
+                        const iconEl = weatherWidget.querySelector("i");
+                        fetch("/api/weather").then(res => res.json()).then(data => {
+                            if (data.error) throw new Error(data.error);
+                            cityEl.textContent = data.city;
+                            tempEl.textContent = `${data.temperature}°C`;
+                            descEl.textContent = data.description;
+                            iconEl.className = getWeatherIconClass(data.icon);
+                        }).catch(err => {
+                            console.error("Wetter-Fehler:", err);
+                            cityEl.textContent = "Wetter-Fehler";
+                        });
+                    }
                 }
             }).catch(() => toggleView(false));
 
@@ -227,41 +263,6 @@
                     loginErrorMsg.classList.remove("hidden");
                 });
             });
-
-            // Fetch Public Data
-            const rssWidgetList = document.querySelector("#rss-widget ul");
-            if (rssWidgetList) {
-                fetch("/api/rss").then(res => res.json()).then(items => {
-                    rssWidgetList.innerHTML = "";
-                    items.forEach(item => {
-                        const li = document.createElement("li");
-                        li.className = "truncate";
-                        li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
-                        rssWidgetList.appendChild(li);
-                    });
-                }).catch(err => {
-                    console.error("RSS-Fehler:", err);
-                    rssWidgetList.innerHTML = "<li>Feed konnte nicht geladen werden.</li>";
-                });
-            }
-
-            const weatherWidget = document.getElementById("weather-widget");
-            if (weatherWidget) {
-                const cityEl = weatherWidget.querySelector("h2");
-                const tempEl = weatherWidget.querySelector("p:nth-of-type(1)");
-                const descEl = weatherWidget.querySelector("p:nth-of-type(2)");
-                const iconEl = weatherWidget.querySelector("i");
-                fetch("/api/weather").then(res => res.json()).then(data => {
-                    if (data.error) throw new Error(data.error);
-                    cityEl.textContent = data.city;
-                    tempEl.textContent = `${data.temperature}°C`;
-                    descEl.textContent = data.description;
-                    iconEl.className = getWeatherIconClass(data.icon);
-                }).catch(err => {
-                    console.error("Wetter-Fehler:", err);
-                    cityEl.textContent = "Wetter-Fehler";
-                });
-            }
 
             // Route Planner Logic
             const routeStartBtn = document.getElementById("route-start-btn");
