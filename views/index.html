@@ -60,7 +60,7 @@
                     <span>WF-Group</span>
                  </a>
                  <a href="https://www.jj-tech.de" target="_blank" class="header-btn">
-                    <span>�🇪</span>
+                    <span>🇩🇪</span>
                     <span>JJ-TECH</span>
                  </a>
             </div>
@@ -144,7 +144,20 @@
         </main>
         
         <main id="private-view" class="flex-grow w-full hidden">
-            <!-- Private Ansicht unverändert -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                <div id="spotify-widget" class="widget rounded-2xl p-6 flex flex-col justify-center items-center text-center">
+                    <p>Lade Spotify-Status...</p>
+                </div>
+                <div class="widget rounded-2xl p-6"><h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-list-check mr-2"></i>To-Do Liste</h3><div id="todo-list" class="space-y-2 text-gray-200 mb-3"></div><form id="add-todo-form" class="flex gap-2"><input id="new-todo-input" class="w-full input-field" placeholder="Neue Aufgabe..." required><button type="submit" class="action-btn text-white font-bold py-2 px-4 rounded-lg">Add</button></form></div>
+                <div class="widget rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1">
+                    <h3 class="font-bold text-lg text-white mb-2"><i class="fas fa-note-sticky mr-2"></i>Schnelle Notiz</h3>
+                    <textarea id="notes-textarea" class="input-field w-full h-full resize-none" placeholder="Hier schreiben..."></textarea>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold mb-6 text-gray-200 border-l-4 border-blue-500 pl-4">Private Apps</h3>
+            <div id="private-apps-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5">
+                <button id="add-app-button" class="tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square border-dashed border-2 border-gray-600 hover:border-purple-500"><i class="fas fa-plus text-5xl text-gray-500 tile-icon"></i><span class="font-semibold text-center text-gray-400">Hinzufügen</span></button>
+            </div>
         </main>
         
         <footer class="mt-8 text-gray-500 flex justify-between items-center w-full">
@@ -169,9 +182,25 @@
     </div>
     
     <div id="add-app-modal" class="modal-overlay hidden">
-        <!-- Add App Modal unverändert -->
+        <div class="modal-content fade-in-up">
+            <h2 class="text-2xl font-bold mb-4">Neue App hinzufügen</h2>
+            <p id="add-app-error" class="text-red-400 mb-4 hidden"></p>
+            <form id="add-app-form" class="space-y-4">
+                <div><label for="app-name" class="block mb-2 text-sm font-medium text-gray-300">Name</label><input type="text" id="app-name" class="w-full input-field" required></div>
+                <div><label for="app-url" class="block mb-2 text-sm font-medium text-gray-300">URL</label><input type="url" id="app-url" class="w-full input-field" placeholder="https://beispiel.de" required></div>
+                <div>
+                    <label for="app-icon" class="block mb-2 text-sm font-medium text-gray-300">Icon-Klasse (optional)</label>
+                    <input type="text" id="app-icon" class="w-full input-field" placeholder="z.B. fas fa-server">
+                    <p class="text-xs text-gray-500 mt-1">Vollständige Klasse von <a href="https://fontawesome.com/search?o=r&m=free" target="_blank" class="text-blue-400 hover:underline">Font Awesome</a>.</p>
+                </div>
+                <div class="mt-6 flex justify-end gap-4">
+                    <button type="button" id="cancel-add-app" class="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">Abbrechen</button>
+                    <button type="submit" id="save-add-app" class="py-2 px-4 action-btn rounded-lg">Speichern</button>
+                </div>
+            </form>
+        </div>
     </div>
-    
+
     <div id="google-suite-modal" class="modal-overlay hidden">
         <div class="modal-content fade-in-up">
             <div class="flex justify-between items-center mb-6">
@@ -192,7 +221,6 @@
             </div>
         </div>
     </div>
-
 
     <script>
         // --- Hilfsfunktionen ---
