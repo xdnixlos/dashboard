@@ -6,7 +6,6 @@
     <title>WF-TECH Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <!-- Korrektur für Performance-Warnungen (gelbe Ausrufezeichen) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,7 +23,15 @@
         #background-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(315deg, rgba(168, 85, 247, 0.1), transparent 40%), linear-gradient(45deg, rgba(59, 130, 246, 0.1), transparent 40%), var(--background-color); animation: moveGradient 20s linear infinite; }
         @keyframes moveGradient { 0% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } 100% { background-position: 0% 0%; } }
         .content-wrapper { position: relative; z-index: 1; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
-        .accent-gradient-text { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; }
+        
+        /* KORRIGIERTE REGEL */
+        .accent-gradient-text { 
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent; 
+        }
+
         .widget, .tile { background: var(--tile-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-color); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .widget:hover, .tile:hover { background: var(--tile-hover-bg); transform: translateY(-8px) scale(1.03); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border-color: var(--accent-purple); }
         .tile-icon { transition: all 0.3s ease; }
@@ -33,7 +40,18 @@
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .action-btn { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
         .action-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); }
-        .logo { font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; background: linear-gradient(90deg, #e0e0e0, #a0a0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* KORRIGIERTE REGEL */
+        .logo { 
+            font-weight: 700; 
+            font-size: 1.5rem; 
+            letter-spacing: 1px; 
+            background: linear-gradient(90deg, #e0e0e0, #a0a0a0); 
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
         .input-field { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.75rem; color: white; transition: border-color 0.3s; }
         .input-field:focus { outline: none; border-color: var(--accent-blue); }
         .todo-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; }
@@ -60,7 +78,6 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                 <div class="widget rounded-2xl p-6 flex justify-between items-center"><div><h2 class="text-xl font-semibold text-gray-400">München</h2><p class="text-4xl font-bold text-gray-200">15°C</p><p class="text-gray-400">Leichter Regen</p></div><i class="fas fa-cloud-sun-rain text-6xl text-blue-300"></i></div>
                 <div class="widget rounded-2xl p-6"> <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-route mr-2"></i>Routenplaner</h3> <input class="w-full input-field mb-2" placeholder="Start..."> <input class="w-full input-field" placeholder="Ziel..."> <button class="w-full mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg">Route starten</button> </div>
-                <!-- WICHTIGE ÄNDERUNG: ID zum Widget hinzugefügt -->
                 <div id="rss-widget" class="widget rounded-2xl p-6 md:col-span-2 lg:col-span-1"> <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-rss mr-2"></i>Tech News</h3> <ul class="text-gray-300 space-y-2 text-sm"> <li>Lade Feed...</li> </ul> </div>
             </div>
             <h3 class="text-2xl font-bold mb-6 text-gray-200 border-l-4 border-purple-500 pl-4">Öffentliche Links</h3>
@@ -74,7 +91,6 @@
         <main id="private-view" class="flex-grow w-full hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                 <div class="widget rounded-2xl p-6 flex gap-6 items-center">
-                    <!-- Korrektur für Performance-Warnungen (gelbe Ausrufezeichen) -->
                     <img src="https://placehold.co/100x100/1DB954/FFFFFF?text=Spotify" alt="Album Art" style="width: 100px; height: 100px; border-radius: 0.75rem;" width="100" height="100">
                     <div> <h3 class="font-bold text-lg">Song Title</h3> <p class="text-gray-400">Artist Name</p> <div class="flex items-center gap-4 mt-2"> <button class="text-2xl hover:text-white transition-colors"><i class="fas fa-backward-step"></i></button> <button class="text-4xl hover:text-white transition-colors"><i class="fas fa-pause-circle"></i></button> <button class="text-2xl hover:text-white transition-colors"><i class="fas fa-forward-step"></i></button> </div> </div> </div>
                 <div class="widget rounded-2xl p-6"> <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-list-check mr-2"></i>To-Do Liste</h3> <div class="space-y-2 text-gray-200"> <div class="todo-item"><input type="checkbox" id="todo1" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded"><label for="todo1">Proxmox Backup konfigurieren</label></div> <div class="todo-item"><input type="checkbox" id="todo2" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded" checked><label for="todo2">Neuen LXC für Dashboard erstellen</label></div> <div class="todo-item"><input type="checkbox" id="todo3" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded"><label for="todo3">Domain für Dashboard einrichten</label></div> </div> <input class="w-full input-field mt-3" placeholder="Neue Aufgabe..."></div>
@@ -171,7 +187,6 @@
             
             if (rssWidgetList) {
                 rssWidgetList.innerHTML = '<li>Lade Feed...</li>';
-                // KORREKTUR: Verwenden Sie eine absolute URL, um den Fehler zu beheben.
                 const url = window.location.origin + '/api/rss';
                 fetch(url)
                     .then(response => {
