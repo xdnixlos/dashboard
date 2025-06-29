@@ -10,8 +10,6 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
         throw err;
     } else {
         console.log('Verbunden mit der SQLite-Datenbank.');
-        
-        // Users-Tabelle erstellen (unverändert)
         db.run(`CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE,
@@ -23,11 +21,10 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
             if (err) {
                 console.error('Fehler beim Erstellen der Benutzertabelle:', err);
             } else {
-                // Ersten Admin-Benutzer anlegen (unverändert)
                 db.get("SELECT * FROM users", [], (err, row) => {
                     if (!row) {
                         const firstAdminUser = 'admin';
-                        const firstAdminPin = '1234';
+                        const firstAdminPin = '1234'; // Bitte nach dem ersten Start im Code ändern
                         bcrypt.hash(firstAdminPin, saltRounds, (err, hash) => {
                             db.run('INSERT INTO users (username, password) VALUES (?,?)', [firstAdminUser, hash]);
                             console.log(`ERSTER BENUTZER ERSTELLT: admin / ${firstAdminPin}`);
@@ -37,7 +34,6 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
             }
         });
 
-        // NEU: Tabelle für die URLs erstellen
         db.run(`CREATE TABLE IF NOT EXISTS urls (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             short_code TEXT UNIQUE,

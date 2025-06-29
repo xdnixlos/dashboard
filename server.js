@@ -16,26 +16,23 @@ const PORT = 3000;
 const { OPENWEATHER_API_KEY, SESSION_SECRET, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } = process.env;
 const SPOTIFY_REDIRECT_URI = 'https://y.wf-tech.de/spotify/callback';
 
-// --- Middleware ---
+// Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(cookieParser());
-// KORRIGIERTER SESSION-BLOCK
 app.use(session({
-    secret: SESSION_SECRET || 'fallback_secret_string',
+    secret: SESSION_SECRET || 'fallback_secret_string_bitte_in_env_aendern',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Für lokale Entwicklung false, hinter Proxy auf true
+    cookie: { secure: false } 
 }));
 
 const isLoggedIn = (req, res, next) => {
-    if (req.session.userId) {
-        return next();
-    }
+    if (req.session.userId) return next();
     res.status(401).json({ error: 'Nicht autorisiert' });
 };
 
-// --- AUTH & CORE ROUTES ---
+// --- API & AUTH ROUTES ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
 
 app.post('/login', (req, res) => {
@@ -57,7 +54,6 @@ app.post('/login', (req, res) => {
 app.get('/logout', (req, res) => req.session.destroy(() => res.redirect('/')));
 app.get('/api/auth/status', (req, res) => res.json({ loggedIn: !!req.session.userId, username: req.session.username }));
 
-// --- SPOTIFY ROUTES ---
 app.get('/connect/spotify', isLoggedIn, (req, res) => {
     const scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state';
     res.redirect('https://accounts.spotify.com/authorize?' + new URLSearchParams({
@@ -104,7 +100,6 @@ app.get('/api/spotify/player', isLoggedIn, async (req, res) => {
     });
 });
 
-// --- WIDGET API ROUTES ---
 app.get('/api/rss', async (req, res) => {
     const feedUrl = 'https://www.tagesschau.de/newsticker.rdf';
     try {
@@ -127,7 +122,6 @@ app.get('/api/weather', async (req, res) => {
     }
 });
 
-// --- URL-SHORTENER-ROUTEN ---
 app.post('/api/shorten', async (req, res) => {
     const { url } = req.body;
     if (!url || !url.startsWith('http')) {
@@ -142,17 +136,24 @@ app.post('/api/shorten', async (req, res) => {
     });
 });
 
-app.get('/:shortCode', (req, res) => {
+// --- Redirect Route MUSS ALS LETZTE ROUTE STEHEN ---
+app.get('/:shortCode', (req, res, next) => {
     const { shortCode } = req.params;
+    // Ignoriere Anfragen, die wahrscheinlich für statische Dateien sind
+    if (shortCode.includes('.')) {
+        return next();
+    }
     db.get("SELECT original_url FROM urls WHERE short_code = ?", [shortCode], (err, row) => {
         if (err) return res.status(500).send('Serverfehler');
         if (row) {
             res.redirect(row.original_url);
         } else {
-            res.status(404).send('URL nicht gefunden');
+            // Wenn die URL nicht gefunden wird, behandeln wir sie nicht und lassen einen 404-Fehler von Express zu
+            next();
         }
     });
 });
+
 
 // --- SERVER START ---
 app.listen(PORT, () => console.log(`[WF-Dashboard] Server läuft auf Port ${PORT}`));
