@@ -260,16 +260,18 @@
                 .then(data => {
                     toggleView(data.loggedIn, data.username);
                     if (data.loggedIn) {
+                        // Nur private Daten laden, wenn eingeloggt
                         updateSpotifyWidget();
                     } else {
+                        // Nur öffentliche Daten laden, wenn ausgeloggt
                         fetchWeatherData();
                         fetchRssData();
                     }
                 })
                 .catch(error => {
                     console.error("Auth-Status-Fehler:", error);
-                    toggleView(false);
-                    fetchWeatherData();
+                    toggleView(false); // Im Fehlerfall immer ausgeloggt anzeigen
+                    fetchWeatherData(); // Und öffentliche Daten laden
                     fetchRssData();
                 });
 
@@ -284,13 +286,10 @@
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, pin })
-                })
-                .then(res => res.json().then(data => ({ status: res.status, body: data })))
-                .then(({ status, body }) => {
+                }).then(res => res.json().then(data => ({ status: res.status, body: data }))).then(({ status, body }) => {
                     if (status !== 200) { throw new Error(body.error || "Login fehlgeschlagen"); }
-                    window.location.reload();
-                })
-                .catch(err => {
+                    window.location.reload(); // Seite nach erfolgreichem Login neu laden
+                }).catch(err => {
                     loginErrorMsg.textContent = err.message;
                     loginErrorMsg.classList.remove("hidden");
                 });
@@ -317,7 +316,9 @@
 
             // Platzhalter für 'App hinzufügen' Modal
             if (addAppButton) {
-                // Hier kommt später die Logik für das App-Hinzufügen-Modal hin
+                // Diese Logik muss noch erstellt werden
+                // const addAppModal = document.getElementById("add-app-modal");
+                // addAppButton.addEventListener('click', () => addAppModal.classList.remove('hidden'));
             }
         });
     </script>
