@@ -98,13 +98,7 @@
     </div>
 
     <script>
-        // --- VOLLSTÄNDIGER UND KORRIGIERTER SCRIPT-BLOCK ---
-
-        // --- Clock & Date Logic ---
-        const timeElement = document.getElementById('time');
-        const dateElement = document.getElementById('date');
-        const kwElement = document.getElementById('calendar-week');
-        
+        // --- Hilfsfunktionen ---
         function getCalendarWeek(date) {
             const currentThursday = new Date(date.valueOf());
             currentThursday.setDate(currentThursday.getDate() - ((date.getDay() + 6) % 7) + 3);
@@ -116,47 +110,15 @@
         }
 
         function updateClock() {
+            const timeElement = document.getElementById('time');
+            const dateElement = document.getElementById('date');
+            const kwElement = document.getElementById('calendar-week');
             const now = new Date();
             timeElement.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
             dateElement.textContent = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             kwElement.textContent = `KW ${getCalendarWeek(now)}`;
         }
-        setInterval(updateClock, 60000);
-        updateClock();
 
-        // --- View Toggling Logic ---
-        const authButton = document.getElementById('auth-button');
-        const publicView = document.getElementById('public-view');
-        const privateView = document.getElementById('private-view');
-        let isLoggedIn = false;
-        authButton.addEventListener('click', () => { isLoggedIn = !isLoggedIn; updateView(); });
-
-        function updateView() {
-            if (isLoggedIn) {
-                publicView.classList.add('hidden');
-                privateView.classList.remove('hidden');
-                authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
-            } else {
-                publicView.classList.remove('hidden');
-                privateView.classList.add('hidden');
-                authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
-            }
-        }
-        
-        // --- Modal Logic ---
-        const addAppModal = document.getElementById('add-app-modal');
-        const addAppButton = document.getElementById('add-app-button');
-        const cancelAppButton = document.getElementById('cancel-add-app');
-        const saveAppButton = document.getElementById('save-add-app');
-
-        addAppButton.addEventListener('click', () => addAppModal.classList.remove('hidden'));
-        cancelAppButton.addEventListener('click', () => addAppModal.classList.add('hidden'));
-        saveAppButton.addEventListener('click', () => {
-            console.log('Speichern geklickt. Name:', document.getElementById('app-name').value, 'URL:', document.getElementById('app-url').value);
-            addAppModal.classList.add('hidden');
-        });
-
-        // HILFSFUNKTION: Wandelt OpenWeather-Icons in FontAwesome-Icons um
         function getWeatherIconClass(iconCode) {
             const baseClass = 'text-6xl';
             const colorClass = 'text-blue-300';
@@ -175,67 +137,82 @@
                 default: return `fas fa-question-circle ${baseClass} text-gray-400`;
             }
         }
+
+        // --- View & Auth Logic ---
+        const authButton = document.getElementById('auth-button');
+        const publicView = document.getElementById('public-view');
+        const privateView = document.getElementById('private-view');
+
+        function toggleView(isLoggedIn) {
+            if (isLoggedIn) {
+                publicView.classList.add('hidden');
+                privateView.classList.remove('hidden');
+                authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
+                authButton.onclick = () => { window.location.href = '/logout'; };
+            } else {
+                publicView.classList.remove('hidden');
+                privateView.classList.add('hidden');
+                authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
+                authButton.onclick = () => { window.location.href = '/login/spotify'; };
+            }
+        }
         
-        // --- API Calls & Event Listeners on Page Load ---
+        // --- Initialisierung beim Laden der Seite ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialer Uhren-Aufruf
+            updateClock();
+            setInterval(updateClock, 60000);
+
+            // Überprüfen, ob ein Login-Fehler in der URL steht
+            const urlParams = new URLSearchParams(window.location.hash.substring(1));
+            if (urlParams.has('error')) {
+                console.error('Spotify Login fehlgeschlagen:', urlParams.get('error'));
+                window.location.hash = ''; // Fehler aus der URL entfernen
+            }
+
+            // HINWEIS: Dies ist noch eine Simulation. Wir müssen den Login-Status
+            // vom Server abfragen, um zu wissen, ob wir die private Ansicht zeigen sollen.
+            // Das kommt im nächsten Schritt. Fürs Erste starten wir ausgeloggt.
+            // Derzeit wird die Ansicht nur durch den Klick auf den Button gesteuert.
+            // Wir müssen hier eine Abfrage des Login-Status einbauen.
+            toggleView(false); // Vorläufig immer ausgeloggt starten
+
+            // --- Alle API Calls und Event Listener ---
+
             // RSS-Feed abrufen
             const rssWidgetList = document.querySelector('#rss-widget ul');
             if (rssWidgetList) {
-                const rssUrl = window.location.origin + '/api/rss';
-                fetch(rssUrl)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Netzwerkantwort war nicht ok.');
-                        return response.json();
-                    })
-                    .then(items => {
-                        if (!items || items.length === 0) throw new Error('Keine Artikel gefunden.');
-                        rssWidgetList.innerHTML = '';
-                        items.forEach(item => {
-                            const listItem = document.createElement('li');
-                            listItem.classList.add('truncate');
-                            const link = document.createElement('a');
-                            link.href = item.link;
-                            link.textContent = item.title;
-                            link.target = '_blank';
-                            link.rel = 'noopener noreferrer';
-                            link.classList.add('hover:text-white');
-                            listItem.appendChild(link);
-                            rssWidgetList.appendChild(listItem);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Fehler beim Abrufen des RSS Feeds:', error);
-                        rssWidgetList.innerHTML = '<li>Feed konnte nicht geladen werden.</li>';
+                fetch('/api/rss').then(res => res.json()).then(items => {
+                    rssWidgetList.innerHTML = '';
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'truncate';
+                        li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
+                        rssWidgetList.appendChild(li);
                     });
+                }).catch(err => {
+                    console.error('RSS-Fehler:', err);
+                    rssWidgetList.innerHTML = '<li>Feed konnte nicht geladen werden.</li>';
+                });
             }
 
             // Wetter abrufen
             const weatherWidget = document.getElementById('weather-widget');
             if (weatherWidget) {
-                const cityElement = weatherWidget.querySelector('h2');
-                const tempElement = weatherWidget.querySelector('p:nth-of-type(1)');
-                const descElement = weatherWidget.querySelector('p:nth-of-type(2)');
-                const iconElement = weatherWidget.querySelector('i');
-                const weatherUrl = window.location.origin + '/api/weather';
-                fetch(weatherUrl)
-                    .then(res => {
-                        if (!res.ok) throw new Error('Netzwerkantwort war nicht ok.');
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (data.error) throw new Error(data.error);
-                        cityElement.textContent = data.city;
-                        tempElement.textContent = `${data.temperature}°C`;
-                        descElement.textContent = data.description;
-                        iconElement.className = getWeatherIconClass(data.icon);
-                    })
-                    .catch(error => {
-                        console.error('Fehler beim Laden des Wetters:', error);
-                        cityElement.textContent = 'Wetter-Fehler';
-                        tempElement.textContent = ':(';
-                        descElement.textContent = 'Daten nicht verfügbar';
-                        iconElement.className = 'fas fa-times-circle text-6xl text-red-400';
-                    });
+                const cityEl = weatherWidget.querySelector('h2');
+                const tempEl = weatherWidget.querySelector('p:nth-of-type(1)');
+                const descEl = weatherWidget.querySelector('p:nth-of-type(2)');
+                const iconEl = weatherWidget.querySelector('i');
+                fetch('/api/weather').then(res => res.json()).then(data => {
+                    if (data.error) throw new Error(data.error);
+                    cityEl.textContent = data.city;
+                    tempEl.textContent = `${data.temperature}°C`;
+                    descEl.textContent = data.description;
+                    iconEl.className = getWeatherIconClass(data.icon);
+                }).catch(err => {
+                    console.error('Wetter-Fehler:', err);
+                    cityEl.textContent = 'Wetter-Fehler';
+                });
             }
 
             // Routenplaner Logik
@@ -245,7 +222,6 @@
                     const start = document.getElementById('route-start').value;
                     const destination = document.getElementById('route-destination').value;
                     if (!start || !destination) {
-                        // Wir verwenden hier keine alert()-Box
                         routeStartBtn.textContent = 'Bitte alles ausfüllen!';
                         routeStartBtn.classList.add('bg-red-500');
                         setTimeout(() => {
@@ -258,6 +234,18 @@
                     window.open(mapsUrl, '_blank');
                 });
             }
+            
+            // Modal Logic
+            const addAppModal = document.getElementById('add-app-modal');
+            const addAppButton = document.getElementById('add-app-button');
+            const cancelAppButton = document.getElementById('cancel-add-app');
+            const saveAppButton = document.getElementById('save-add-app');
+
+            addAppButton.addEventListener('click', () => addAppModal.classList.remove('hidden'));
+            cancelAppButton.addEventListener('click', () => addAppModal.classList.add('hidden'));
+            saveAppButton.addEventListener('click', () => {
+                addAppModal.classList.add('hidden');
+            });
         });
     </script>
 </body>
