@@ -25,8 +25,8 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
                 db.all(sql, [], (err, rows) => {
                     if (rows.length === 0) {
                         // Kein Benutzer vorhanden, ersten Admin-Benutzer mit PIN erstellen
-                        const firstAdminUser = 'admin';
-                        const firstAdminPin = '1234'; // UNBEDINGT ÄNDERN!
+                        const firstAdminUser = 'w.fischer';
+                        const firstAdminPin = '778877'; // UNBEDINGT ÄNDERN!
                         
                         bcrypt.hash(firstAdminPin, saltRounds, (err, hash) => {
                             if (err) {
