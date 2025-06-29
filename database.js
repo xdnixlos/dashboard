@@ -33,16 +33,29 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
             icon TEXT,
             user_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES users (id)
-        )`, (err) => {
-            if (err) {
-                console.error('Fehler beim Erstellen der Apps-Tabelle:', err);
-            }
-        });
+        )`);
 
+        // NEU: Tabelle für die eine Notiz pro User
+        db.run(`CREATE TABLE IF NOT EXISTS notes (
+            user_id INTEGER PRIMARY KEY,
+            content TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )`);
+
+        // NEU: Tabelle für die To-Do-Aufgaben
+        db.run(`CREATE TABLE IF NOT EXISTS todos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task TEXT NOT NULL,
+            completed BOOLEAN NOT NULL DEFAULT 0,
+            user_id INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )`);
+
+        // Ersten Admin-Benutzer anlegen (unverändert)
         db.get("SELECT * FROM users", [], (err, row) => {
             if (!row) {
-                const firstAdminUser = 'w.fischer';
-                const firstAdminPin = '887788'; // UNBEDINGT ÄNDERN!
+                const firstAdminUser = 'admin';
+                const firstAdminPin = '1234';
                 bcrypt.hash(firstAdminPin, saltRounds, (err, hash) => {
                     db.run('INSERT INTO users (username, password) VALUES (?,?)', [firstAdminUser, hash]);
                     console.log(`ERSTER BENUTZER ERSTELLT: admin / ${firstAdminPin}`);

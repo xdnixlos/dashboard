@@ -171,6 +171,61 @@ app.delete('/api/apps/:id', isLoggedIn, (req, res) => {
     });
 });
 
+// --- NOTIZEN-API ---
+app.get('/api/notes', isLoggedIn, (req, res) => {
+    db.get('SELECT content FROM notes WHERE user_id = ?', [req.session.userId], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ content: row ? row.content : '' });
+    });
+});
+
+app.post('/api/notes', isLoggedIn, (req, res) => {
+    const { content } = req.body;
+    const sql = `INSERT INTO notes (user_id, content) VALUES (?, ?)
+                 ON CONFLICT(user_id) DO UPDATE SET content = excluded.content`;
+    db.run(sql, [req.session.userId, content], err => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'Notiz gespeichert' });
+    });
+});
+
+// --- TO-DO-API ---
+app.get('/api/todos', isLoggedIn, (req, res) => {
+    db.all('SELECT * FROM todos WHERE user_id = ?', [req.session.userId], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ data: rows });
+    });
+});
+
+app.post('/api/todos', isLoggedIn, (req, res) => {
+    const { task } = req.body;
+    if (!task) return res.status(400).json({ error: 'Aufgabe darf nicht leer sein' });
+    const sql = 'INSERT INTO todos (task, user_id) VALUES (?, ?)';
+    db.run(sql, [task, req.session.userId], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ data: { id: this.lastID, task, completed: 0 } });
+    });
+});
+
+app.put('/api/todos/:id', isLoggedIn, (req, res) => {
+    const { completed } = req.body;
+    const sql = 'UPDATE todos SET completed = ? WHERE id = ? AND user_id = ?';
+    db.run(sql, [completed, req.params.id, req.session.userId], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Aufgabe nicht gefunden' });
+        res.json({ message: 'Aufgabe aktualisiert' });
+    });
+});
+
+app.delete('/api/todos/:id', isLoggedIn, (req, res) => {
+    const sql = 'DELETE FROM todos WHERE id = ? AND user_id = ?';
+    db.run(sql, [req.params.id, req.session.userId], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Aufgabe nicht gefunden' });
+        res.json({ message: 'Aufgabe gelöscht' });
+    });
+});
+
 // --- Redirect Route MUSS ALS LETZTE ROUTE STEHEN ---
 app.get('/:shortCode', (req, res, next) => {
     const { shortCode } = req.params;
