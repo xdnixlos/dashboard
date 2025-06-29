@@ -23,19 +23,15 @@ app.use(session({
     secret: SESSION_SECRET || 'default_secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: { secure: false } // In Produktion hinter NGINX sollte dies auf 'true' gesetzt werden
 }));
 
-// Hilfsfunktion: Prüft, ob der Benutzer eingeloggt ist
 const isLoggedIn = (req, res, next) => {
-    if (req.session.userId) {
-        next();
-    } else {
-        res.status(401).json({ error: 'Nicht autorisiert' });
-    }
+    if (req.session.userId) return next();
+    res.status(401).json({ error: 'Nicht autorisiert' });
 };
 
-// --- AUTHENTIFIZIERUNGS-ROUTEN ---
+// --- AUTH & CORE ROUTES ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
 
 app.post('/login', (req, res) => {
@@ -57,17 +53,16 @@ app.post('/login', (req, res) => {
 app.get('/logout', (req, res) => req.session.destroy(() => res.redirect('/')));
 app.get('/api/auth/status', (req, res) => res.json({ loggedIn: !!req.session.userId, username: req.session.username }));
 
-// --- SPOTIFY-VERBINDUNGS-ROUTEN ---
+
+// --- SPOTIFY ROUTES ---
 app.get('/connect/spotify', isLoggedIn, (req, res) => {
     const scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state';
-    const authUrl = 'https://accounts.spotify.com/authorize?' +
-        new URLSearchParams({
-            response_type: 'code',
-            client_id: SPOTIFY_CLIENT_ID,
-            scope: scope,
-            redirect_uri: SPOTIFY_REDIRECT_URI,
-        }).toString();
-    res.redirect(authUrl);
+    res.redirect('https://accounts.spotify.com/authorize?' + new URLSearchParams({
+        response_type: 'code',
+        client_id: SPOTIFY_CLIENT_ID,
+        scope: scope,
+        redirect_uri: SPOTIFY_REDIRECT_URI,
+    }).toString());
 });
 
 app.get('/spotify/callback', isLoggedIn, async (req, res) => {
@@ -84,11 +79,7 @@ app.get('/spotify/callback', isLoggedIn, async (req, res) => {
         });
         const { access_token, refresh_token, expires_in } = response.data;
         const expires_at = Date.now() + expires_in * 1000;
-
-        db.run(
-            `UPDATE users SET spotify_access_token = ?, spotify_refresh_token = ?, spotify_token_expires = ? WHERE id = ?`,
-            [access_token, refresh_token, expires_at, req.session.userId]
-        );
+        db.run(`UPDATE users SET spotify_access_token = ?, spotify_refresh_token = ?, spotify_token_expires = ? WHERE id = ?`, [access_token, refresh_token, expires_at, req.session.userId]);
         res.redirect('/');
     } catch (error) {
         console.error('Spotify Token Fehler:', error.response ? error.response.data : error.message);
@@ -96,31 +87,43 @@ app.get('/spotify/callback', isLoggedIn, async (req, res) => {
     }
 });
 
-// --- SPOTIFY-PLAYER-API ---
 app.get('/api/spotify/player', isLoggedIn, async (req, res) => {
     db.get('SELECT spotify_access_token FROM users WHERE id = ?', [req.session.userId], async (err, user) => {
-        if (!user || !user.spotify_access_token) {
-            return res.json({ connected: false });
-        }
+        if (!user || !user.spotify_access_token) return res.json({ connected: false });
         try {
-            const response = await axios.get('https://api.spotify.com/v1/me/player', {
-                headers: { 'Authorization': `Bearer ${user.spotify_access_token}` }
-            });
-            if (response.status === 204 || !response.data) {
-                return res.json({ connected: true, is_playing: false });
-            }
+            const response = await axios.get('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${user.spotify_access_token}` } });
+            if (response.status === 204 || !response.data) return res.json({ connected: true, is_playing: false });
             res.json({ connected: true, ...response.data });
         } catch (error) {
-            // Hier würde man die Token-Refresh-Logik einbauen
             console.error("Spotify Player Fehler:", error.response ? error.response.data : error.message);
             res.status(500).json({ error: 'Spotify-Fehler' });
         }
     });
 });
 
-// --- API Routen (Wetter & RSS) ---
-app.get('/api/rss', async (req, res) => { /* ... bleibt gleich ... */ });
-app.get('/api/weather', async (req, res) => { /* ... bleibt gleich ... */ });
 
-// Server Start
+// --- WIDGET API ROUTES ---
+app.get('/api/rss', async (req, res) => {
+    const feedUrl = 'https://www.tagesschau.de/newsticker.rdf';
+    try {
+        const feed = await parser.parseURL(feedUrl);
+        res.json(feed.items.slice(0, 5));
+    } catch (error) {
+        res.status(500).json({ error: 'Feed konnte nicht geladen werden.' });
+    }
+});
+
+app.get('/api/weather', async (req, res) => {
+    if (!OPENWEATHER_API_KEY) return res.status(500).json({ error: 'Wetterschlüssel nicht konfiguriert.' });
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=48.1374&lon=11.5755&appid=${OPENWEATHER_API_KEY}&lang=de&units=metric`;
+    try {
+        const weatherResponse = await axios.get(url);
+        const d = weatherResponse.data;
+        res.json({ city: d.name, temperature: Math.round(d.main.temp), description: d.weather[0].description, icon: d.weather[0].icon });
+    } catch (error) {
+        res.status(500).json({ error: 'Wetterdaten konnten nicht geladen werden.' });
+    }
+});
+
+// --- SERVER START ---
 app.listen(PORT, () => console.log(`[WF-Dashboard] Server läuft auf Port ${PORT}`));
