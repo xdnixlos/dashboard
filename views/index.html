@@ -87,7 +87,7 @@
     </div>
 
     <script>
-        // --- HILFSFUNKTIONEN ---
+        // --- Hilfsfunktionen ---
         function getCalendarWeek(date) {
             const currentThursday = new Date(date.valueOf());
             currentThursday.setDate(currentThursday.getDate() - ((date.getDay() + 6) % 7) + 3);
@@ -126,7 +126,7 @@
             }
         }
 
-        // --- DATENLADEFUNKTIONEN ---
+        // --- Datenladefunktionen ---
         function fetchWeatherData() {
             const weatherWidget = document.getElementById("weather-widget");
             if (!weatherWidget) return;
@@ -246,19 +246,18 @@
             updateClock();
             setInterval(updateClock, 60000);
 
-            // Login-Status prüfen und entsprechende Daten laden
+            // Öffentliche Daten immer laden
+            fetchWeatherData();
+            fetchRssData();
+
+            // Login-Status prüfen und ggf. private Daten laden
             fetch("/api/auth/status").then(res => res.json()).then(data => {
                 toggleView(data.loggedIn, data.username);
                 if (data.loggedIn) {
-                    updateSpotifyWidget(); // Daten für private Ansicht laden
-                } else {
-                    fetchWeatherData(); // Daten für öffentliche Ansicht laden
-                    fetchRssData();
+                    updateSpotifyWidget();
                 }
             }).catch(() => {
                 toggleView(false);
-                fetchWeatherData();
-                fetchRssData();
             });
 
             // Event Listener für Login-Modal
@@ -301,9 +300,11 @@
                 });
             }
 
-            // (Platzhalter für 'App hinzufügen' Modal)
+            // Platzhalter für 'App hinzufügen' Modal
             if (addAppButton) {
-                // Hier kommt später die Logik für das App-Hinzufügen-Modal hin
+                const addAppModal = document.getElementById("add-app-modal");
+                // Diese Logik muss noch erstellt werden
+                // addAppButton.addEventListener('click', () => addAppModal.classList.remove('hidden'));
             }
         });
     </script>
