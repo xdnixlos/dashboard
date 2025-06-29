@@ -55,7 +55,7 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
         db.get("SELECT * FROM users", [], (err, row) => {
             if (!row) {
                 const firstAdminUser = 'admin';
-                const firstAdminPin = '1234';
+                const firstAdminPin = '1234'; // UNBEDINGT ÄNDERN!
                 bcrypt.hash(firstAdminPin, saltRounds, (err, hash) => {
                     db.run('INSERT INTO users (username, password) VALUES (?,?)', [firstAdminUser, hash]);
                     console.log(`ERSTER BENUTZER ERSTELLT: admin / ${firstAdminPin}`);

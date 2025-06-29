@@ -191,7 +191,7 @@ app.post('/api/notes', isLoggedIn, (req, res) => {
 
 // --- TO-DO-API ---
 app.get('/api/todos', isLoggedIn, (req, res) => {
-    db.all('SELECT * FROM todos WHERE user_id = ?', [req.session.userId], (err, rows) => {
+    db.all('SELECT * FROM todos WHERE user_id = ? ORDER BY id', [req.session.userId], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ data: rows });
     });

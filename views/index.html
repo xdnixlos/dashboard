@@ -71,8 +71,18 @@
                 <div id="spotify-widget" class="widget rounded-2xl p-6 flex flex-col justify-center items-center text-center">
                     <p>Lade Spotify-Status...</p>
                 </div>
-                <div class="widget rounded-2xl p-6"><h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-list-check mr-2"></i>To-Do Liste</h3><div class="space-y-2 text-gray-200"><div class="todo-item"><input type="checkbox" id="todo1" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded"><label for="todo1">Proxmox Backup konfigurieren</label></div><div class="todo-item"><input type="checkbox" id="todo2" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded" checked><label for="todo2">Neuen LXC für Dashboard erstellen</label></div><div class="todo-item"><input type="checkbox" id="todo3" class="w-5 h-5 accent-purple-500 bg-gray-700 rounded"><label for="todo3">Domain für Dashboard einrichten</label></div></div><input class="w-full input-field mt-3" placeholder="Neue Aufgabe..."></div>
-                <div class="widget rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1"><h3 class="font-bold text-lg text-white mb-2"><i class="fas fa-note-sticky mr-2"></i>Schnelle Notiz</h3><textarea class="input-field w-full h-full resize-none" placeholder="Hier schreiben..."></textarea></div>
+                <div class="widget rounded-2xl p-6">
+                    <h3 class="font-bold text-lg text-white mb-3"><i class="fas fa-list-check mr-2"></i>To-Do Liste</h3>
+                    <div id="todo-list" class="space-y-2 text-gray-200 mb-3"></div>
+                    <form id="add-todo-form" class="flex gap-2">
+                        <input id="new-todo-input" class="w-full input-field" placeholder="Neue Aufgabe..." required>
+                        <button type="submit" class="action-btn text-white font-bold py-2 px-4 rounded-lg">Add</button>
+                    </form>
+                </div>
+                <div class="widget rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1">
+                    <h3 class="font-bold text-lg text-white mb-2"><i class="fas fa-note-sticky mr-2"></i>Schnelle Notiz</h3>
+                    <textarea id="notes-textarea" class="input-field w-full h-full resize-none" placeholder="Hier schreiben..."></textarea>
+                </div>
             </div>
             <h3 class="text-2xl font-bold mb-6 text-gray-200 border-l-4 border-blue-500 pl-4">Private Apps</h3>
             <div id="private-apps-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5">
@@ -123,293 +133,23 @@
 
     <script>
         // --- Hilfsfunktionen ---
-        function getCalendarWeek(date) {
-            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        }
-
-        function updateClock() {
-            const timeElement = document.getElementById('time');
-            const dateElement = document.getElementById('date');
-            const kwElement = document.getElementById('calendar-week');
-            if (!timeElement || !dateElement || !kwElement) return;
-            const now = new Date();
-            timeElement.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-            dateElement.textContent = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            kwElement.textContent = `KW ${getCalendarWeek(now)}`;
-        }
-
-        function getWeatherIconClass(iconCode) {
-            const baseClass = 'text-6xl';
-            const colorClass = 'text-blue-300';
-            switch (iconCode) {
-                case '01d': return `fas fa-sun ${baseClass} text-yellow-300`;
-                case '01n': return `fas fa-moon ${baseClass} text-indigo-300`;
-                case '02d': return `fas fa-cloud-sun ${baseClass} text-yellow-400`;
-                case '02n': return `fas fa-cloud-moon ${baseClass} text-indigo-300`;
-                case '03d': case '03n': case '04d': case '04n': return `fas fa-cloud ${baseClass} text-gray-400`;
-                case '09d': case '09n': return `fas fa-cloud-showers-heavy ${baseClass} ${colorClass}`;
-                case '10d': return `fas fa-cloud-sun-rain ${baseClass} ${colorClass}`;
-                case '10n': return `fas fa-cloud-moon-rain ${baseClass} ${colorClass}`;
-                case '11d': case '11n': return `fas fa-bolt ${baseClass} text-yellow-500`;
-                case '13d': case '13n': return `fas fa-snowflake ${baseClass} text-white`;
-                case '50d': case '50n': return `fas fa-smog ${baseClass} text-gray-500`;
-                default: return `fas fa-question-circle ${baseClass} text-gray-400`;
-            }
-        }
+        function getCalendarWeek(date) { const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); }
+        function updateClock() { const t=document.getElementById("time"),e=document.getElementById("date"),o=document.getElementById("calendar-week");if(!t||!e||!o)return;const n=new Date;t.textContent=n.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}),e.textContent=n.toLocaleDateString("de-DE",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),o.textContent=`KW ${getCalendarWeek(n)}`}
+        function getWeatherIconClass(t){const e="text-6xl",o="text-blue-300";switch(t){case"01d":return`fas fa-sun ${e} text-yellow-300`;case"01n":return`fas fa-moon ${e} text-indigo-300`;case"02d":return`fas fa-cloud-sun ${e} text-yellow-400`;case"02n":return`fas fa-cloud-moon ${e} text-indigo-300`;case"03d":case"03n":case"04d":case"04n":return`fas fa-cloud ${e} text-gray-400`;case"09d":case"09n":return`fas fa-cloud-showers-heavy ${e} ${o}`;case"10d":return`fas fa-cloud-sun-rain ${e} ${o}`;case"10n":return`fas fa-cloud-moon-rain ${e} ${o}`;case"11d":case"11n":return`fas fa-bolt ${e} text-yellow-500`;case"13d":case"13n":return`fas fa-snowflake ${e} text-white`;case"50d":case"50n":return`fas fa-smog ${e} text-gray-500`;default:return`fas fa-question-circle ${e} text-gray-400`}}
 
         // --- Datenladefunktionen ---
-        function fetchWeatherData() {
-            const el = {
-                widget: document.getElementById("weather-widget"),
-                city: document.querySelector("#weather-widget h2"),
-                temp: document.querySelector("#weather-widget p:nth-of-type(1)"),
-                desc: document.querySelector("#weather-widget p:nth-of-type(2)"),
-                icon: document.querySelector("#weather-widget i"),
-            };
-            if (!el.widget) return;
-            
-            fetch("/api/weather").then(res => res.json()).then(data => {
-                if (data.error) throw new Error(data.error);
-                el.city.textContent = data.city;
-                el.temp.textContent = `${data.temperature}°C`;
-                el.desc.textContent = data.description;
-                el.icon.className = getWeatherIconClass(data.icon);
-            }).catch(err => {
-                console.error("Wetter-Fehler:", err);
-                el.city.textContent = "Wetter-Fehler";
-            });
-        }
-
-        function fetchRssData() {
-            const list = document.querySelector("#rss-widget ul");
-            if (!list) return;
-            fetch("/api/rss").then(res => res.json()).then(items => {
-                list.innerHTML = "";
-                if (!items || items.length === 0) {
-                    list.innerHTML = "<li>Keine Artikel gefunden.</li>";
-                    return;
-                }
-                items.forEach(item => {
-                    const li = document.createElement("li");
-                    li.className = "truncate";
-                    li.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${item.title}</a>`;
-                    list.appendChild(li);
-                });
-            }).catch(err => {
-                console.error("RSS-Fehler:", err);
-                list.innerHTML = "<li>Feed konnte nicht geladen werden.</li>";
-            });
-        }
-
-        function updateSpotifyWidget() {
-            const widget = document.getElementById('spotify-widget');
-            if (!widget) return;
-            fetch('/api/spotify/player').then(res => res.json()).then(data => {
-                if (data.error) {
-                    widget.innerHTML = `<p class="text-red-400">Spotify Fehler</p>`;
-                } else if (!data.connected) {
-                    widget.innerHTML = `<i class="fab fa-spotify text-5xl text-green-500 mb-3"></i><h3 class="text-xl font-bold">Spotify verbinden</h3><button onclick="window.location.href='/connect/spotify'" class="mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg text-sm">Verbinden</button>`;
-                } else if (data.item) {
-                    widget.innerHTML = `<div class="flex gap-6 items-center w-full"><img src="${data.item.album.images[0].url}" alt="Album Art" class="w-24 h-24 rounded-lg shadow-lg"><div class="text-left flex-grow"><h3 class="font-bold text-lg truncate">${data.item.name}</h3><p class="text-gray-400 truncate">${data.item.artists.map(a=>a.name).join(', ')}</p><div class="flex items-center gap-4 mt-2"><button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-backward-step"></i></button><button class="text-4xl hover:text-white">${data.is_playing?'<i class="fas fa-pause-circle"></i>':'<i class="fas fa-play-circle"></i>'}</button><button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-forward-step"></i></button></div></div></div>`;
-                } else {
-                    widget.innerHTML = `<p>Auf keinem Gerät wird Musik abgespielt.</p>`;
-                }
-            }).catch(err => {
-                widget.innerHTML = `<p class="text-red-400">Spotify Status konnte nicht geladen werden.</p>`;
-            });
-        }
-        function renderApps(apps) {
-            const container = document.getElementById('private-apps-container');
-            if (!container) return;
-            document.querySelectorAll('.app-tile').forEach(tile => tile.remove());
-            apps.forEach(app => addAppTileToDOM(app));
-        }
-
-        function addAppTileToDOM(app) {
-            const container = document.getElementById('private-apps-container');
-            if (!container) return;
-            const tileLink = document.createElement('a');
-            tileLink.href = app.url;
-            tileLink.target = "_blank";
-            tileLink.className = "app-tile tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square";
-            tileLink.dataset.id = app.id;
-            tileLink.innerHTML = `<button class="delete-btn" data-id="${app.id}"><i class="fas fa-times"></i></button><i class="${app.icon || 'fas fa-globe'} text-blue-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">${app.name}</span>`;
-            container.insertBefore(tileLink, document.getElementById('add-app-button'));
-            tileLink.querySelector('.delete-btn').addEventListener('click', e => {
-                e.preventDefault(); e.stopPropagation();
-                deleteApp(app.id);
-            });
-        }
-
-        function deleteApp(appId) {
-            if (!confirm('Möchten Sie diese App wirklich löschen?')) return;
-            fetch(`/api/apps/${appId}`, { method: 'DELETE' })
-                .then(res => {
-                    if (!res.ok) throw new Error('Löschen fehlgeschlagen');
-                    document.querySelector(`.app-tile[data-id='${appId}']`).remove();
-                })
-                .catch(err => alert('App konnte nicht gelöscht werden.'));
-        }
-
-        function fetchApps() {
-            fetch('/api/apps').then(res => res.json()).then(response => {
-                if (response.data) renderApps(response.data);
-            }).catch(err => console.error("Fehler beim Laden der Apps:", err));
-        }
+        function fetchWeatherData(){const t=document.getElementById("weather-widget");if(!t)return;const e=t.querySelector("h2"),o=t.querySelector("p:nth-of-type(1)"),n=t.querySelector("p:nth-of-type(2)"),a=t.querySelector("i");fetch("/api/weather").then(t=>t.json()).then(t=>{if(t.error)throw new Error(t.error);e.textContent=t.city,o.textContent=`${t.temperature}°C`,n.textContent=t.description,a.className=getWeatherIconClass(t.icon)}).catch(t=>{console.error("Wetter-Fehler:",t),e.textContent="Wetter-Fehler"})}
+        function fetchRssData(){const t=document.querySelector("#rss-widget ul");if(!t)return;fetch("/api/rss").then(t=>t.json()).then(e=>{if(t.innerHTML="",!e||0===e.length)return void(t.innerHTML="<li>Keine Artikel gefunden.</li>");e.forEach(e=>{const o=document.createElement("li");o.className="truncate",o.innerHTML=`<a href="${e.link}" target="_blank" rel="noopener noreferrer" class="hover:text-white">${e.title}</a>`,t.appendChild(o)})}).catch(e=>{console.error("RSS-Fehler:",e),t.innerHTML="<li>Feed konnte nicht geladen werden.</li>"})}
+        function updateSpotifyWidget(){const t=document.getElementById("spotify-widget");t&&fetch("/api/spotify/player").then(t=>t.json()).then(e=>{e.error?t.innerHTML='<p class="text-red-400">Spotify Fehler</p>':e.connected?e.item?t.innerHTML=`<div class="flex gap-6 items-center w-full"><img src="${e.item.album.images[0].url}" alt="Album Art" class="w-24 h-24 rounded-lg shadow-lg"><div class="text-left flex-grow"><h3 class="font-bold text-lg truncate">${e.item.name}</h3><p class="text-gray-400 truncate">${e.item.artists.map(t=>t.name).join(", ")}</p><div class="flex items-center gap-4 mt-2"><button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-backward-step"></i></button><button class="text-4xl hover:text-white">${e.is_playing?'<i class="fas fa-pause-circle"></i>':'<i class="fas fa-play-circle"></i>'}</button><button class="text-2xl text-gray-400 hover:text-white"><i class="fas fa-forward-step"></i></button></div></div></div>`:t.innerHTML="<p>Auf keinem Gerät wird Musik abgespielt.</p>":t.innerHTML='<i class="fab fa-spotify text-5xl text-green-500 mb-3"></i><h3 class="text-xl font-bold">Spotify verbinden</h3><button onclick="window.location.href=\'/connect/spotify\'" class="mt-3 action-btn text-white font-bold py-2 px-4 rounded-lg text-sm">Verbinden</button>'}).catch(e=>{t.innerHTML='<p class="text-red-400">Spotify Status konnte nicht geladen werden.</p>',console.error("Spotify Widget Fehler:",e)})}
+        function renderApps(t){const e=document.getElementById("private-apps-container");if(!e)return;document.querySelectorAll(".app-tile").forEach(t=>t.remove()),t.forEach(t=>{addAppTileToDOM(t)})}
+        function addAppTileToDOM(t){const e=document.getElementById("private-apps-container");if(!e)return;const o=document.createElement("a");o.href=t.url,o.target="_blank",o.className="app-tile tile rounded-xl p-4 flex flex-col items-center justify-center aspect-square",o.dataset.id=t.id,o.innerHTML=`<button class="delete-btn" data-id="${t.id}"><i class="fas fa-times"></i></button><i class="${t.icon||"fas fa-globe"} text-blue-400 text-5xl mb-2 tile-icon"></i><span class="font-semibold text-center text-gray-200">${t.name}</span>`,e.insertBefore(o,document.getElementById("add-app-button")),o.querySelector(".delete-btn").addEventListener("click",e=>{e.preventDefault(),e.stopPropagation(),deleteApp(t.id)})}
+        function deleteApp(t){confirm("Möchten Sie diese App wirklich löschen?")&&fetch(`/api/apps/${t}`,{method:"DELETE"}).then(t=>{if(!t.ok)throw new Error("Löschen fehlgeschlagen");document.querySelector(`.app-tile[data-id='${t}']`).remove()}).catch(t=>{alert("App konnte nicht gelöscht werden.")})}
+        function fetchApps(){fetch("/api/apps").then(t=>t.json()).then(t=>{t.data&&renderApps(t.data)}).catch(t=>console.error("Fehler beim Laden der Apps:",t))}
+        let noteSaveTimeout;function saveNote(){clearTimeout(noteSaveTimeout),noteSaveTimeout=setTimeout(()=>{const t=document.getElementById("notes-textarea").value;fetch("/api/notes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({content:t})}).catch(t=>console.error("Fehler beim Speichern der Notiz:",t))},1e3)}function fetchNote(){fetch("/api/notes").then(t=>t.json()).then(t=>{document.getElementById("notes-textarea").value=t.content||""})}
+        function renderTodos(t){const e=document.getElementById("todo-list");e.innerHTML="",t.forEach(t=>{const o=document.createElement("div");o.className="todo-item flex items-center justify-between",o.innerHTML=`\n                    <div class="flex items-center gap-3">\n                        <input type="checkbox" id="todo-${t.id}" ${t.completed?"checked":""} class="w-5 h-5 accent-purple-500 bg-gray-700 rounded">\n                        <label for="todo-${t.id}" class="${t.completed?"line-through text-gray-500":""}">${t.task}</label>\n                    </div>\n                    <button class="text-gray-500 hover:text-red-500 text-xs"><i class="fas fa-trash"></i></button>\n                `,o.querySelector("input").addEventListener("change",e=>toggleTodo(t.id,e.target.checked)),o.querySelector("button").addEventListener("click",()=>deleteTodoDOM(t.id)),e.appendChild(o)})}function fetchTodos(){fetch("/api/todos").then(t=>t.json()).then(t=>{t.data&&renderTodos(t.data)})}function addTodo(t){fetch("/api/todos",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:t})}).then(t=>t.json()).then(t=>fetchTodos())}function toggleTodo(t,e){fetch(`/api/todos/${t}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({completed:e?1:0})}).then(()=>fetchTodos())}function deleteTodoDOM(t){confirm("Aufgabe wirklich löschen?")&&fetch(`/api/todos/${t}`,{method:"DELETE"}).then(()=>fetchTodos())}
 
         // --- HAUPTLOGIK & EVENT LISTENERS ---
-        document.addEventListener("DOMContentLoaded", () => {
-            const ui = {
-                authButton: document.getElementById('auth-button'),
-                publicView: document.getElementById('public-view'),
-                privateView: document.getElementById('private-view'),
-                userGreeting: document.getElementById('user-greeting'),
-                loginModal: document.getElementById('login-modal'),
-                loginForm: document.getElementById('login-form'),
-                cancelLoginBtn: document.getElementById('cancel-login'),
-                loginErrorMsg: document.getElementById('login-error'),
-                addAppModal: document.getElementById('add-app-modal'),
-                addAppForm: document.getElementById('add-app-form'),
-                addAppButton: document.getElementById('add-app-button'),
-                cancelAddAppBtn: document.getElementById('cancel-add-app'),
-                addAppErrorMsg: document.getElementById('add-app-error'),
-                routeStartBtn: document.getElementById("route-start-btn"),
-                shortenBtn: document.getElementById('shorten-btn'),
-                copyBtn: document.getElementById('copy-btn'),
-            };
-
-            function toggleView(isLoggedIn, username = '') {
-                if (isLoggedIn) {
-                    ui.publicView.classList.add('hidden');
-                    ui.privateView.classList.remove('hidden');
-                    ui.userGreeting.querySelector('span').textContent = username;
-                    ui.userGreeting.classList.remove('hidden');
-                    ui.authButton.innerHTML = `<i class="fas fa-unlock mr-2"></i> Abmelden`;
-                    ui.authButton.onclick = () => { window.location.href = '/logout'; };
-                } else {
-                    ui.publicView.classList.remove('hidden');
-                    ui.privateView.classList.add('hidden');
-                    ui.userGreeting.classList.add('hidden');
-                    ui.authButton.innerHTML = `<i class="fas fa-lock mr-2"></i> Anmelden`;
-                    ui.authButton.onclick = () => { ui.loginModal.classList.remove('hidden'); };
-                }
-            }
-
-            // --- Initialisierung ---
-            updateClock();
-            setInterval(updateClock, 60000);
-
-            fetch("/api/auth/status").then(res => res.json()).then(data => {
-                toggleView(data.loggedIn, data.username);
-                if (data.loggedIn) {
-                    updateSpotifyWidget();
-                    fetchApps();
-                } else {
-                    fetchWeatherData();
-                    fetchRssData();
-                }
-            }).catch(err => {
-                console.error("Auth-Status-Fehler:", err);
-                toggleView(false);
-                fetchWeatherData();
-                fetchRssData();
-            });
-
-            // --- Event Listeners ---
-            ui.cancelLoginBtn.addEventListener("click", () => ui.loginModal.classList.add("hidden"));
-            ui.loginForm.addEventListener("submit", e => {
-                e.preventDefault();
-                const username = document.getElementById("username").value;
-                const pin = document.getElementById("pin").value;
-                ui.loginErrorMsg.classList.add("hidden");
-                fetch("/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, pin })
-                }).then(res => res.json().then(data => ({ status: res.status, body: data }))).then(({ status, body }) => {
-                    if (status !== 200) throw new Error(body.error || "Login fehlgeschlagen");
-                    window.location.reload();
-                }).catch(err => {
-                    ui.loginErrorMsg.textContent = err.message;
-                    ui.loginErrorMsg.classList.remove("hidden");
-                });
-            });
-
-            if (ui.routeStartBtn) {
-                ui.routeStartBtn.addEventListener("click", () => {
-                    const start = document.getElementById("route-start").value;
-                    const destination = document.getElementById("route-destination").value;
-                    if (!start || !destination) {
-                        ui.routeStartBtn.textContent = "Bitte alles ausfüllen!";
-                        ui.routeStartBtn.classList.add("bg-red-500");
-                        setTimeout(() => {
-                            ui.routeStartBtn.textContent = "Route starten";
-                            ui.routeStartBtn.classList.remove("bg-red-500");
-                        }, 2000);
-                        return;
-                    }
-                    window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(destination)}`, "_blank");
-                });
-            }
-            
-            if (ui.shortenBtn) {
-                ui.shortenBtn.addEventListener('click', () => {
-                    const longUrlInput = document.getElementById('long-url-input');
-                    const longUrl = longUrlInput.value;
-                    if (!longUrl || !longUrl.startsWith('http')) return alert('Bitte eine gültige URL eingeben.');
-                    ui.shortenBtn.disabled = true;
-                    ui.shortenBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                    fetch('/api/shorten', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url: longUrl })
-                    }).then(res => res.json()).then(data => {
-                        if (data.error) throw new Error(data.error);
-                        document.getElementById('short-url-output').value = data.shortUrl;
-                        document.getElementById('short-url-result').classList.remove('hidden');
-                    }).catch(err => alert(err.message)).finally(() => {
-                        ui.shortenBtn.disabled = false;
-                        ui.shortenBtn.innerHTML = 'Kürzen';
-                    });
-                });
-            }
-
-            if (ui.copyBtn) {
-                ui.copyBtn.addEventListener('click', () => {
-                    const output = document.getElementById('short-url-output');
-                    output.select();
-                    document.execCommand('copy');
-                    ui.copyBtn.innerHTML = '<i class="fas fa-check text-green-500"></i>';
-                    setTimeout(() => { ui.copyBtn.innerHTML = '<i class="fas fa-copy"></i>'; }, 2000);
-                });
-            }
-            
-            ui.addAppButton.addEventListener('click', () => ui.addAppModal.classList.remove('hidden'));
-            ui.cancelAddAppBtn.addEventListener('click', () => ui.addAppModal.classList.add('hidden'));
-            ui.addAppForm.addEventListener('submit', e => {
-                e.preventDefault();
-                const name = document.getElementById('app-name').value;
-                const url = document.getElementById('app-url').value;
-                const icon = document.getElementById('app-icon').value;
-                ui.addAppErrorMsg.classList.add('hidden');
-                fetch('/api/apps/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, url, icon })
-                }).then(res => res.json()).then(response => {
-                    if (response.error) throw new Error(response.error);
-                    addAppTileToDOM(response.data);
-                    ui.addAppModal.classList.add('hidden');
-                    ui.addAppForm.reset();
-                }).catch(err => {
-                    ui.addAppErrorMsg.textContent = err.message;
-                    ui.addAppErrorMsg.classList.remove('hidden');
-                });
-            });
-        });
+        document.addEventListener("DOMContentLoaded",()=>{const t={authButton:document.getElementById("auth-button"),publicView:document.getElementById("public-view"),privateView:document.getElementById("private-view"),userGreeting:document.getElementById("user-greeting"),loginModal:document.getElementById("login-modal"),loginForm:document.getElementById("login-form"),cancelLoginBtn:document.getElementById("cancel-login"),loginErrorMsg:document.getElementById("login-error"),addAppModal:document.getElementById("add-app-modal"),addAppForm:document.getElementById("add-app-form"),addAppButton:document.getElementById("add-app-button"),cancelAddAppBtn:document.getElementById("cancel-add-app"),addAppErrorMsg:document.getElementById("add-app-error"),routeStartBtn:document.getElementById("route-start-btn"),shortenBtn:document.getElementById("shorten-btn"),copyBtn:document.getElementById("copy-btn"),notesTextarea:document.getElementById("notes-textarea"),addTodoForm:document.getElementById("add-todo-form")};function e(e,o=""){e?(t.publicView.classList.add("hidden"),t.privateView.classList.remove("hidden"),t.userGreeting.querySelector("span").textContent=o,t.userGreeting.classList.remove("hidden"),t.authButton.innerHTML='<i class="fas fa-unlock mr-2"></i> Abmelden',t.authButton.onclick=()=>{window.location.href="/logout"}):(t.publicView.classList.remove("hidden"),t.privateView.classList.add("hidden"),t.userGreeting.classList.add("hidden"),t.authButton.innerHTML='<i class="fas fa-lock mr-2"></i> Anmelden',t.authButton.onclick=()=>{t.loginModal.classList.remove("hidden")})}updateClock(),setInterval(updateClock,6e4),fetch("/api/auth/status").then(t=>t.json()).then(o=>{e(o.loggedIn,o.username),o.loggedIn?(updateSpotifyWidget(),fetchApps(),fetchNote(),fetchTodos()):(fetchWeatherData(),fetchRssData())}).catch(o=>{console.error("Auth-Status-Fehler:",o),e(!1),fetchWeatherData(),fetchRssData()}),t.cancelLoginBtn.addEventListener("click",()=>t.loginModal.classList.add("hidden")),t.loginForm.addEventListener("submit",e=>{e.preventDefault();const o=document.getElementById("username").value,n=document.getElementById("pin").value;t.loginErrorMsg.classList.add("hidden"),fetch("/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:o,pin:n})}).then(t=>t.json().then(e=>({status:t.status,body:e}))).then(({status:t,body:e})=>{if(200!==t)throw new Error(e.error||"Login fehlgeschlagen");window.location.reload()}).catch(e=>{t.loginErrorMsg.textContent=e.message,t.loginErrorMsg.classList.remove("hidden")})}),t.routeStartBtn&&t.routeStartBtn.addEventListener("click",()=>{const e=document.getElementById("route-start").value,o=document.getElementById("route-destination").value;if(!e||!o)return t.routeStartBtn.textContent="Bitte alles ausfüllen!",t.routeStartBtn.classList.add("bg-red-500"),void setTimeout(()=>{t.routeStartBtn.textContent="Route starten",t.routeStartBtn.classList.remove("bg-red-500")},2e3);const n=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(e)}&destination=${encodeURIComponent(o)}`;window.open(n,"_blank")}),t.shortenBtn&&t.shortenBtn.addEventListener("click",()=>{const e=document.getElementById("long-url-input").value;if(!e||!e.startsWith("http"))return alert("Bitte eine gültige URL eingeben.");t.shortenBtn.disabled=!0,t.shortenBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i>',fetch("/api/shorten",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:e})}).then(t=>t.json()).then(e=>{if(e.error)throw new Error(e.error);document.getElementById("short-url-output").value=e.shortUrl,document.getElementById("short-url-result").classList.remove("hidden")}).catch(t=>alert(t.message)).finally(()=>{t.shortenBtn.disabled=!1,t.shortenBtn.innerHTML="Kürzen"})}),t.copyBtn&&t.copyBtn.addEventListener("click",()=>{const e=document.getElementById("short-url-output");e.select(),document.execCommand("copy"),t.copyBtn.innerHTML='<i class="fas fa-check text-green-500"></i>',setTimeout(()=>{t.copyBtn.innerHTML='<i class="fas fa-copy"></i>'},2e3)}),t.addAppButton.addEventListener("click",()=>t.addAppModal.classList.remove("hidden")),t.cancelAddAppBtn.addEventListener("click",()=>t.addAppModal.classList.add("hidden")),t.addAppForm.addEventListener("submit",e=>{e.preventDefault();const o=document.getElementById("app-name").value,n=document.getElementById("app-url").value,a=document.getElementById("app-icon").value;t.addAppErrorMsg.classList.add("hidden"),fetch("/api/apps/add",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:o,url:n,icon:a})}).then(t=>t.json()).then(e=>{if(e.error)throw new Error(e.error);addAppTileToDOM(e.data),t.addAppModal.classList.add("hidden"),t.addAppForm.reset()}).catch(e=>{t.addAppErrorMsg.textContent=e.message,t.addAppErrorMsg.classList.remove("hidden")})}),t.notesTextarea.addEventListener("input",saveNote),t.addTodoForm.addEventListener("submit",e=>{e.preventDefault();const o=document.getElementById("new-todo-input");""!==o.value.trim()&&(addTodo(o.value.trim()),o.value="")})});
     </script>
 </body>
 </html>
