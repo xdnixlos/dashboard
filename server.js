@@ -1,26 +1,40 @@
 // Importiert die notwendigen Module
 const express = require('express');
 const path = require('path');
+const Parser = require('rss-parser'); // NEU: rss-parser importieren
 
-// Initialisiert die Express-Anwendung
+// Initialisiert die Express-Anwendung und den Parser
 const app = express();
-// Definiert den Port, auf dem der Server laufen wird.
+const parser = new Parser(); // NEU: Parser-Instanz erstellen
 const PORT = 3000;
 
 // --- Middleware ---
-// Liefert statische Dateien aus dem 'public'-Ordner aus
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- Routen ---
-// Hauptroute, die die index.html-Datei ausliefert
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
+// NEUE API-ROUTE FÜR DEN RSS-FEED
+app.get('/api/rss', async (req, res) => {
+    // Die URL des Feeds. Später können wir dies dynamisch machen.
+    const feedUrl = 'https://www.tagesschau.de/newsticker.rdf'; 
+    
+    try {
+        // Versuche, den Feed zu parsen
+        const feed = await parser.parseURL(feedUrl);
+        // Sende die ersten 5 Artikel als JSON-Antwort zurück
+        res.json(feed.items.slice(0, 5)); 
+    } catch (error) {
+        // Bei einem Fehler, logge den Fehler und sende einen Server-Fehler-Status
+        console.error('Fehler beim Abrufen des RSS-Feeds:', error);
+        res.status(500).json({ error: 'Feed konnte nicht geladen werden.' });
+    }
+});
+
+
 // --- Server Start ---
-// Startet den Server und lauscht auf dem definierten Port
 app.listen(PORT, () => {
     console.log(`[WF-Dashboard] Server läuft auf Port ${PORT}`);
-    console.log(`[WF-Dashboard] Erreichbar im LXC unter http://localhost:${PORT}`);
-    console.log(`[WF-Dashboard] Aufruf via NGINX Reverse Proxy auf http://192.168.55.115:${PORT}`);
 });
