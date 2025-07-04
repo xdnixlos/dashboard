@@ -252,8 +252,180 @@
         let noteSaveTimeout;function saveNote(){clearTimeout(noteSaveTimeout),noteSaveTimeout=setTimeout(()=>{const t=document.getElementById("notes-textarea").value;fetch("/api/notes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({content:t})}).catch(t=>console.error("Fehler beim Speichern der Notiz:",t))},1e3)}function fetchNote(){fetch("/api/notes").then(t=>t.json()).then(t=>{document.getElementById("notes-textarea").value=t.content||""})}
         function renderTodos(t){const e=document.getElementById("todo-list");e.innerHTML="",t.forEach(t=>{const o=document.createElement("div");o.className="todo-item flex items-center justify-between",o.innerHTML=`\n                    <div class="flex items-center gap-3">\n                        <input type="checkbox" id="todo-${t.id}" ${t.completed?"checked":""} class="w-5 h-5 accent-purple-500 bg-gray-700 rounded">\n                        <label for="todo-${t.id}" class="${t.completed?"line-through text-gray-500":""}">${t.task}</label>\n                    </div>\n                    <button class="text-gray-500 hover:text-red-500 text-xs"><i class="fas fa-trash"></i></button>\n                `,o.querySelector("input").addEventListener("change",e=>toggleTodo(t.id,e.target.checked)),o.querySelector("button").addEventListener("click",()=>deleteTodoDOM(t.id)),e.appendChild(o)})}function fetchTodos(){fetch("/api/todos").then(t=>t.json()).then(t=>{t.data&&renderTodos(t.data)})}function addTodo(t){fetch("/api/todos",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:t})}).then(t=>t.json()).then(t=>fetchTodos())}function toggleTodo(t,e){fetch(`/api/todos/${t}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({completed:e?1:0})}).then(()=>fetchTodos())}function deleteTodoDOM(t){if(!confirm("Aufgabe wirklich löschen?"))return;fetch(`/api/todos/${t}`,{method:"DELETE"}).then(()=>fetchTodos())}
 
+         // --- Media Player Funktion (NEU) ---
+        function setupMediaPlayer() {
+            const widget = document.getElementById('media-player-widget');
+            if (!widget) return;
+
+            let playlist = [];
+            let currentTrackIndex = 0;
+            let activePlayer;
+            let mediaType = 'audio'; // Startet mit Audio
+
+            // Player-Grundstruktur aufbauen
+            widget.innerHTML = `
+                <div class="flex justify-between items-center w-full mb-4">
+                    <h3 class="font-bold text-lg text-white"><i class="fas fa-play-circle mr-2"></i>Media Player</h3>
+                    <div class="media-toggle">
+                        <button id="toggle-audio" class="active">Audio</button>
+                        <button id="toggle-video">Video</button>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-6 w-full">
+                    <div class="w-32 h-32 rounded-lg shadow-lg flex-shrink-0 mx-auto relative">
+                        <img id="media-album-art" src="https://placehold.co/128x128/7c3aed/FFFFFF?text=WF" alt="Album Art" class="w-full h-full object-cover rounded-lg">
+                        <video id="media-video-player" class="w-full h-full rounded-lg hidden" controls></video>
+                    </div>
+                    <div class="flex flex-col justify-between flex-grow w-full text-center sm:text-left">
+                        <div>
+                            <h3 id="media-song-title" class="font-bold text-2xl text-white truncate">Wähle einen Titel</h3>
+                            <p id="media-song-artist" class="text-lg text-gray-400">-</p>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-xs text-gray-400"><span id="media-current-time">0:00</span><span id="media-total-time">0:00</span></div>
+                            <div class="progress-bar-bg w-full h-2 rounded-full mt-1"><div id="media-progress-bar" class="progress-bar-fg h-2 rounded-full" style="width: 0%;"></div></div>
+                            <div class="flex items-center justify-center gap-6 mt-3">
+                                <button id="media-prev-btn" class="text-3xl text-gray-400 hover:text-white transition-colors"><i class="fas fa-backward-step"></i></button>
+                                <button id="media-play-pause-btn" class="text-5xl hover:text-purple-400 transition-colors"><i class="fas fa-play-circle"></i></button>
+                                <button id="media-next-btn" class="text-3xl text-gray-400 hover:text-white transition-colors"><i class="fas fa-forward-step"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 w-full border-t border-gray-700 pt-4">
+                    <h4 id="playlist-title" class="font-semibold mb-2">Playlist: Audio</h4>
+                    <ul id="media-playlist" class="text-left space-y-1 max-h-32 overflow-y-auto"><li>Lade...</li></ul>
+                </div>
+            `;
+            
+            const ui = {
+                audioPlayer: document.getElementById('media-audio-player'), // Unsichtbarer Audio-Player
+                videoPlayer: document.getElementById('media-video-player'),
+                playPauseBtn: document.getElementById('media-play-pause-btn'),
+                prevBtn: document.getElementById('media-prev-btn'),
+                nextBtn: document.getElementById('media-next-btn'),
+                albumArt: document.getElementById('media-album-art'),
+                title: document.getElementById('media-song-title'),
+                artist: document.getElementById('media-song-artist'),
+                currentTime: document.getElementById('media-current-time'),
+                totalTime: document.getElementById('media-total-time'),
+                progressBar: document.getElementById('media-progress-bar'),
+                playlist: document.getElementById('media-playlist'),
+                toggleAudio: document.getElementById('toggle-audio'),
+                toggleVideo: document.getElementById('toggle-video'),
+                playlistTitle: document.getElementById('playlist-title')
+            };
+
+            function loadPlaylist(type) {
+                mediaType = type;
+                ui.playlistTitle.textContent = `Playlist: ${type === 'audio' ? 'Audio' : 'Video'}`;
+                ui.toggleAudio.classList.toggle('active', type === 'audio');
+                ui.toggleVideo.classList.toggle('active', type === 'video');
+                
+                fetch(`/api/${type === 'audio' ? 'music' : 'videos'}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        playlist = data;
+                        currentTrackIndex = 0;
+                        renderPlaylist();
+                        if (playlist.length > 0) {
+                            loadTrack(0);
+                        } else {
+                            ui.title.textContent = "Keine Titel gefunden";
+                            ui.artist.textContent = "-";
+                        }
+                    }).catch(err => {
+                        console.error(`Fehler beim Laden der ${type}-Playlist:`, err);
+                        ui.playlist.innerHTML = `<li>Fehler beim Laden.</li>`;
+                    });
+            }
+            
+            function renderPlaylist() {
+                ui.playlist.innerHTML = '';
+                playlist.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = `p-2 rounded-md playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
+                    li.textContent = `${item.artist} - ${item.title}`;
+                    li.onclick = () => {
+                        currentTrackIndex = index;
+                        loadTrack(currentTrackIndex);
+                        playTrack();
+                    };
+                    ui.playlist.appendChild(li);
+                });
+            }
+
+            function loadTrack(index) {
+                if (!playlist[index]) return;
+                const track = playlist[index];
+                ui.title.textContent = track.title;
+                ui.artist.textContent = track.artist;
+                
+                if (mediaType === 'audio') {
+                    activePlayer = ui.audioPlayer;
+                    ui.videoPlayer.classList.add('hidden');
+                    ui.albumArt.classList.remove('hidden');
+                    ui.albumArt.src = track.cover;
+                } else {
+                    activePlayer = ui.videoPlayer;
+                    ui.videoPlayer.classList.remove('hidden');
+                    ui.albumArt.classList.add('hidden');
+                }
+                activePlayer.src = track.src;
+                renderPlaylist();
+            }
+
+            function playTrack() { activePlayer.play(); ui.playPauseBtn.innerHTML = '<i class="fas fa-pause-circle"></i>'; }
+            function pauseTrack() { activePlayer.pause(); ui.playPauseBtn.innerHTML = '<i class="fas fa-play-circle"></i>'; }
+
+            ui.toggleAudio.addEventListener('click', () => loadPlaylist('audio'));
+            ui.toggleVideo.addEventListener('click', () => loadPlaylist('video'));
+            ui.playPauseBtn.addEventListener('click', () => { activePlayer.paused ? playTrack() : pauseTrack(); });
+            ui.nextBtn.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex + 1) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
+            ui.prevBtn.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
+            
+            const updateTime = () => {
+                if (activePlayer && activePlayer.duration) {
+                    const progress = (activePlayer.currentTime / activePlayer.duration) * 100;
+                    ui.progressBar.style.width = `${progress}%`;
+                    ui.currentTime.textContent = formatTime(activePlayer.currentTime);
+                    ui.totalTime.textContent = formatTime(activePlayer.duration);
+                }
+            };
+
+            ui.audioPlayer.addEventListener('timeupdate', updateTime);
+            ui.videoPlayer.addEventListener('timeupdate', updateTime);
+            ui.audioPlayer.addEventListener('ended', () => ui.nextBtn.click());
+            ui.videoPlayer.addEventListener('ended', () => ui.nextBtn.click());
+
+            function formatTime(seconds) { const min = Math.floor(seconds / 60); const sec = Math.floor(seconds % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
+            
+            // Initial load
+            loadPlaylist('audio');
+        }
+
         // --- HAUPTLOGIK & EVENT LISTENERS ---
-        document.addEventListener("DOMContentLoaded",()=>{const t={authButton:document.getElementById("auth-button"),publicView:document.getElementById("public-view"),privateView:document.getElementById("private-view"),userGreeting:document.getElementById("user-greeting"),loginModal:document.getElementById("login-modal"),loginForm:document.getElementById("login-form"),cancelLoginBtn:document.getElementById("cancel-login"),loginErrorMsg:document.getElementById("login-error"),addAppModal:document.getElementById("add-app-modal"),addAppForm:document.getElementById("add-app-form"),addAppButton:document.getElementById("add-app-button"),cancelAddAppBtn:document.getElementById("cancel-add-app"),addAppErrorMsg:document.getElementById("add-app-error"),routeStartBtn:document.getElementById("route-start-btn"),shortenBtn:document.getElementById("shorten-btn"),copyBtn:document.getElementById("copy-btn"),notesTextarea:document.getElementById("notes-textarea"),addTodoForm:document.getElementById("add-todo-form"),radioPlayer:document.getElementById("radio-player"),playPauseBtn:document.getElementById("radio-play-pause-btn"),stationSelect:document.getElementById("station-select"),googleSuiteBtn:document.getElementById("google-suite-btn"),googleSuiteModal:document.getElementById("google-suite-modal"),closeGoogleModalBtn:document.getElementById("close-google-modal")};function e(e,o=""){e?(t.publicView.classList.add("hidden"),t.privateView.classList.remove("hidden"),t.userGreeting.querySelector("span").textContent=o,t.userGreeting.classList.remove("hidden"),t.authButton.innerHTML='<i class="fas fa-unlock mr-2"></i> Abmelden',t.authButton.onclick=()=>{window.location.href="/logout"}):(t.publicView.classList.remove("hidden"),t.privateView.classList.add("hidden"),t.userGreeting.classList.add("hidden"),t.authButton.innerHTML='<i class="fas fa-lock mr-2"></i> Anmelden',t.authButton.onclick=()=>{t.loginModal.classList.remove("hidden")})}updateClock(),setInterval(updateClock,6e4),fetch("/api/auth/status").then(t=>t.json()).then(o=>{e(o.loggedIn,o.username),o.loggedIn?(updateSpotifyWidget(),fetchApps(),fetchNote(),fetchTodos()):(fetchWeatherData(),fetchRssData())}).catch(o=>{console.error("Auth-Status-Fehler:",o),e(!1),fetchWeatherData(),fetchRssData()}),t.cancelLoginBtn.addEventListener("click",()=>t.loginModal.classList.add("hidden")),t.loginForm.addEventListener("submit",e=>{e.preventDefault();const o=document.getElementById("username").value,n=document.getElementById("pin").value;t.loginErrorMsg.classList.add("hidden"),fetch("/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:o,pin:n})}).then(t=>t.json().then(e=>({status:t.status,body:e}))).then(({status:t,body:e})=>{if(200!==t)throw new Error(e.error||"Login fehlgeschlagen");window.location.reload()}).catch(e=>{t.loginErrorMsg.textContent=e.message,t.loginErrorMsg.classList.remove("hidden")})}),t.routeStartBtn&&t.routeStartBtn.addEventListener("click",()=>{const e=document.getElementById("route-start").value,o=document.getElementById("route-destination").value;if(!e||!o)return t.routeStartBtn.textContent="Bitte alles ausfüllen!",t.routeStartBtn.classList.add("bg-red-500"),void setTimeout(()=>{t.routeStartBtn.textContent="Route starten",t.routeStartBtn.classList.remove("bg-red-500")},2e3);const n=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(e)}&destination=${encodeURIComponent(o)}`;window.open(n,"_blank")}),t.shortenBtn&&t.shortenBtn.addEventListener("click",()=>{const e=document.getElementById("long-url-input").value;if(!e||!e.startsWith("http"))return alert("Bitte eine gültige URL eingeben.");t.shortenBtn.disabled=!0,t.shortenBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i>',fetch("/api/shorten",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:e})}).then(t=>t.json()).then(e=>{if(e.error)throw new Error(e.error);document.getElementById("short-url-output").value=e.shortUrl,document.getElementById("short-url-result").classList.remove("hidden")}).catch(t=>alert(t.message)).finally(()=>{t.shortenBtn.disabled=!1,t.shortenBtn.innerHTML="Kürzen"})}),t.copyBtn&&t.copyBtn.addEventListener("click",()=>{const e=document.getElementById("short-url-output");e.select(),document.execCommand("copy"),t.copyBtn.innerHTML='<i class="fas fa-check text-green-500"></i>',setTimeout(()=>{t.copyBtn.innerHTML='<i class="fas fa-copy"></i>'},2e3)}),t.addAppButton.addEventListener("click",()=>t.addAppModal.classList.remove("hidden")),t.cancelAddAppBtn.addEventListener("click",()=>t.addAppModal.classList.add("hidden")),t.addAppForm.addEventListener("submit",e=>{e.preventDefault();const o=document.getElementById("app-name").value,n=document.getElementById("app-url").value,a=document.getElementById("app-icon").value;t.addAppErrorMsg.classList.add("hidden"),fetch("/api/apps/add",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:o,url:n,icon:a})}).then(t=>t.json()).then(e=>{if(e.error)throw new Error(e.error);addAppTileToDOM(e.data),t.addAppModal.classList.add("hidden"),t.addAppForm.reset()}).catch(e=>{t.addAppErrorMsg.textContent=e.message,t.addAppErrorMsg.classList.remove("hidden")})}),t.notesTextarea.addEventListener("input",saveNote),t.addTodoForm.addEventListener("submit",e=>{e.preventDefault();const o=document.getElementById("new-todo-input");""!==o.value.trim()&&(addTodo(o.value.trim()),o.value="")}),t.radioPlayer&&t.playPauseBtn&&t.stationSelect&&(t.radioPlayer.src=t.stationSelect.value,t.playPauseBtn.addEventListener("click",()=>{t.radioPlayer.paused?(t.radioPlayer.play(),t.playPauseBtn.innerHTML='<i class="fas fa-pause-circle"></i>'):(t.radioPlayer.pause(),t.playPauseBtn.innerHTML='<i class="fas fa-play-circle"></i>')}),t.stationSelect.addEventListener("change",()=>{t.radioPlayer.src=t.stationSelect.value,t.radioPlayer.play(),t.playPauseBtn.innerHTML='<i class="fas fa-pause-circle"></i>'})),t.googleSuiteBtn&&t.googleSuiteModal&&t.closeGoogleModalBtn&&(t.googleSuiteBtn.addEventListener("click",()=>t.googleSuiteModal.classList.remove("hidden")),t.closeGoogleModalBtn.addEventListener("click",()=>t.googleSuiteModal.classList.add("hidden")),t.googleSuiteModal.addEventListener("click",e=>{e.target===t.googleSuiteModal&&t.googleSuiteModal.classList.add("hidden")}))});
+        document.addEventListener("DOMContentLoaded", () => {
+            // ... (Alle anderen Listener und Initialisierungen)
+            
+            fetch("/api/auth/status").then(res => res.json()).then(data => {
+                toggleView(data.loggedIn, data.username);
+                if (data.loggedIn) {
+                    // Private Daten laden
+                } else {
+                    // Öffentliche Daten laden
+                    fetchWeatherData();
+                    fetchRssData();
+                    setupMediaPlayer();
+                }
+            }).catch(err => {
+                console.error("Auth-Status-Fehler:", err);
+                toggleView(false);
+                fetchWeatherData();
+                fetchRssData();
+                setupMediaPlayer();
+            });
+        });
     </script>
 </body>
 </html>

@@ -7,6 +7,7 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const fs = require('fs');
 const db = require('./database.js');
 
 const app = express();
@@ -246,6 +247,57 @@ app.delete('/api/todos/:id', isLoggedIn, (req, res) => {
         if (this.changes === 0) return res.status(404).json({ error: 'Aufgabe nicht gefunden' });
         res.json({ message: 'Aufgabe gelöscht' });
     });
+});
+
+
+
+// --- NEUE MEDIA PLAYER API ROUTEN ---
+function readMediaDirectory(directory, fileExtension) {
+    return new Promise((resolve, reject) => {
+        fs.readdir(directory, (err, files) => {
+            if (err) {
+                console.error(`Verzeichnis konnte nicht gelesen werden: ${directory}`, err);
+                return reject('Medien konnten nicht geladen werden.');
+            }
+            const mediaFiles = files
+                .filter(file => file.endsWith(fileExtension))
+                .map((file, index) => {
+                    const nameWithoutExt = path.parse(file).name;
+                    const parts = nameWithoutExt.split(' - ');
+                    const artist = parts.length > 1 ? parts[0].trim() : 'Unbekannter Künstler';
+                    const title = parts.length > 1 ? parts[1].trim() : parts[0].trim();
+                    
+                    return {
+                        id: index,
+                        title: title,
+                        artist: artist,
+                        src: `/${path.basename(directory)}/${file}`,
+                        cover: 'https://placehold.co/128x128/7c3aed/FFFFFF?text=WF'
+                    };
+                });
+            resolve(mediaFiles);
+        });
+    });
+}
+
+app.get('/api/music', async (req, res) => {
+    try {
+        const musicDir = path.join(__dirname, 'public', 'music');
+        const songs = await readMediaDirectory(musicDir, '.mp3');
+        res.json(songs);
+    } catch (error) {
+        res.status(500).json({ error });
+    }
+});
+
+app.get('/api/videos', async (req, res) => {
+    try {
+        const videoDir = path.join(__dirname, 'public', 'videos');
+        const videos = await readMediaDirectory(videoDir, '.mp4');
+        res.json(videos);
+    } catch (error) {
+        res.status(500).json({ error });
+    }
 });
 
 // --- Redirect Route ---
