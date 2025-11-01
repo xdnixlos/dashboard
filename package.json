@@ -1,0 +1,21 @@
+{
+  "name": "wf-tech-dashboard",
+  "version": "2.0.0",
+  "description": "Personalisiertes PWA Dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "fs": "^0.0.1-security",
+    "rss-parser": "^3.13.0",
+    "sqlite3": "^5.1.7"
+  }
+}
+

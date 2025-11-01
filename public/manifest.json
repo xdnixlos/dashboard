@@ -1,0 +1,21 @@
+{
+  "name": "WF-Group Home",
+  "short_name": "WF-Group",
+  "description": "Das persönliche Dashboard der WF-Group.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A10",
+  "theme_color": "#0A0A10",
+  "icons": [
+    {
+      "src": "/images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
